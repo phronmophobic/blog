@@ -10,6 +10,8 @@
                  [com.vladsch.flexmark/flexmark-all "0.62.2"]
                  [hiccup "1.0.5"]]
   :main ^:skip-aot blog.core
+  ;; :javac-options     ["-target" "1.8" "-source" "1.8"]
+  :java-source-paths ["src-java"]
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}

@@ -365,19 +365,20 @@
    :src "markdown/functional-ui.md"
    :out "resources/public/functional-ui.html"})
 
-(defpost anti-html-post
-  {:id :anti-html
+(defpost html-tax-post
+  {:id :html-tax
    :title "The HTML Tax"
    :subheading "Html is a poor medium for specifying user interfaces"
-   :nav nil #_[:div {:class "container"}
-               [:nav.nav.blog-nav
-                [:a.nav-link.active {:href "#"}
-                 "Treemaps are awesome!"]
-                [:a.nav-link {:href "treemap-demo.html"}
-                 "Treemap Demo"]
-                [:a.nav-link {:href "https://github.com/phronmophobic/treemap-clj"}
-                 "Code on Github"]]]
-   :src "markdown/anti-html.md"
+   :nav [:div {:class "container"}
+         [:nav.nav.blog-nav " "
+          ;; [:a.nav-link.active {:href "#"}
+          ;;  "Treemaps are awesome!"]
+          ;; [:a.nav-link {:href "treemap-demo.html"}
+          ;;  "Treemap Demo"]
+          ;; [:a.nav-link {:href "https://github.com/phronmophobic/treemap-clj"}
+          ;;  "Code on Github"]
+          ]]
+   :src "markdown/html-tax.md"
    :out "resources/public/html-tax/html-tax.html"})
 
 (defn render-post! [{:keys [title

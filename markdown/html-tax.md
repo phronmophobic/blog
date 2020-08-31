@@ -81,13 +81,21 @@ Notable exceptions include:
 
 Hopefully, your interface is happy with the default state management because if not, you'll need to resort to a gamut of hacky work arounds.{{footnote}}[Code Mirror example 1](https://github.com/codemirror/CodeMirror/blob/0b64369b54503150f054abda50359c76f00f484f/src/edit/mouse_events.js#L400){{/footnote}} {{footnote}}[Code Mirror Example 2](https://github.com/codemirror/CodeMirror/blob/c41dec13675da74fb575006a502d7daee6abdafe/src/input/ContentEditableInput.js#L250){{/footnote}} {{footnote}}[Code Mirror Example 3](https://github.com/codemirror/CodeMirror/blob/c41dec13675da74fb575006a502d7daee6abdafe/src/input/ContentEditableInput.js#L94){{/footnote}} {{footnote}}[Code Mirror Example 4](https://github.com/codemirror/CodeMirror/blob/b5ce22f1e350431adaefbad40cbfc54dbfdb1c77/src/input/input.js#L122){{/footnote}}
 
-# The payoff
+# Show cases
+
+## airbnb
 
 In [Painting With Code](https://airbnb.design/painting-with-code/), airbnb's design team builds a new design tool that increases their productivity. It's buried in the middle of the story, but if you look carefully, you'll see that by using an appropriate ui representation, they unlocked massive potential.
 
 > A breakthrough came when Airbnb engineer Leland Richardson proposed using React Native-style components. `<View>`, `<Text>`, etc. are the basic units of composition for design systems, so that semantically linked our Sketch components with their production counterparts. More excitingly, with Leland’s React Primitives project we could render real React components to Sketch, the browser, and our phones at the same time.
 
 > We began the project to reduce the time it takes to generate static assets. But through exploring its edges and adjacent possibilities, we’re unearthing exciting and novel ways of interacting with design systems in Sketch. Many tasks that were previously unfeasible, required massive human input, or relied on sketchy (sorry) plugins are now enabled with the same code that our engineers are writing day-to-day.
+
+## games/unity
+
+## Origami
+
+## Interface builder
 
 
 ### Increased performance

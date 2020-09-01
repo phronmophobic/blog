@@ -316,7 +316,7 @@
 
 
 (defmethod markdown-macro "tableflip" [macro]
-  [:p {:title "table flip"} "(ノಠ益ಠ)ノ彡┻━┻"])
+  [:p {:title "table flip"} "(╯°□°）╯︵ ┻━┻"])
 
 (defmethod markdown-macro "blockquote-footer" [macro]
   [:footer.blockquote-footer

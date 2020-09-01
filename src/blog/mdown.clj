@@ -56,7 +56,7 @@
       (.getName m)
       (if (instance? com.vladsch.flexmark.ext.xwiki.macros.MacroBlock m)
         (.getName (.getMacroNode m))
-        ::non-macro))))
+        (type m)))))
 
 (defmethod macroexpand1-doc :default [node]
   node)
@@ -98,10 +98,82 @@
        ". " footnote])]))
 
 
-(defn macroexpand-doc [doc]
+
+(defn preprocess-footnotes [doc]
   (binding [*parse-state* nil]
     (zip-walk (doc->zip doc)
               macroexpand1-doc)))
+
+(defn header->tag-name [header]
+  (let [tag-chars (clojure.string/join
+                     (map #(.getChars %) (children header)))
+        tag-name (-> tag-chars
+                       (clojure.string/replace #"[ ]" "-")
+                       (clojure.string/replace #"[^A-Z\-a-z0-9]" ""))]
+    tag-name))
+
+(defn make-toc []
+  (z/zipper (constantly true)
+            #(get % :children [])
+            (fn [node children]
+              (assoc node :children children))
+            {}))
+
+
+(defn add-section [toc header]
+
+  (loop [toc toc]
+    (let [p (z/up toc)
+          level (.getLevel header)]
+      (if (and p (>= (get (z/node toc) :level)
+                     level))
+        (recur p)
+        (let [res (-> toc
+                      (z/append-child {:title (clojure.string/join
+                                               (map #(.getChars %) (children header)))
+                                       :name (header->tag-name header)
+                                       :level level})
+                      z/down
+                      z/rightmost)]
+          res)))))
+
+
+(defn gen-table-of-contents [doc]
+  (loop [zip (doc->zip doc)
+         toc (make-toc)]
+    (if (z/end? zip)
+      (z/root toc)
+      (let [node (z/node zip)]
+        (if (instance? com.vladsch.flexmark.ast.Heading node)
+          (recur (z/next zip) (add-section toc node))
+          (recur (z/next zip) toc))))))
+
+
+
+
+(defn gen-toc-html [toc]
+  (let [html ()
+        html (if-let [childs (:children toc)]
+               (cons [:ul (map gen-toc-html childs)]
+                     html)
+               html)
+        html (if-let [title (:title toc)]
+               (cons [:li [:a {:href (str "#" (:name toc))} title]]
+                     html)
+               html)]
+    html))
+
+
+(defn preprocess-table-of-contents [doc]
+  (let [toc (gen-table-of-contents doc)
+        toc-html (gen-toc-html toc)]
+    (zip-walk (doc->zip doc)
+              (fn [node]
+                (if (instance? com.vladsch.flexmark.ext.xwiki.macros.MacroBlock node)
+                  (if (= (.getName (.getMacroNode node)) "table-of-contents")
+                    (hiccup-node toc-html)
+                    node)
+                  node)))))
 
 (defn parse [s]
   (let [options (doto (MutableDataSet.)
@@ -110,7 +182,10 @@
         parser (-> (Parser/builder options)
                    (.build))
         doc (.parse parser s)
-        doc (macroexpand-doc doc)]
+        doc (-> doc
+                (preprocess-footnotes)
+                (preprocess-table-of-contents))]
+
     doc))
 
 (defprotocol IBlogHtml
@@ -144,13 +219,8 @@
 (extend-type com.vladsch.flexmark.ast.Heading
   IBlogHtml
   (blog-html [this]
-    (let [tag (keyword (str "h" (.getLevel this)))
-          tag-chars (clojure.string/join
-                     (map #(.getChars %) (children this)))
-          tag-name (-> tag-chars
-                       (clojure.string/replace #"[ ]" "-")
-                       (clojure.string/replace #"[^A-Z\-a-z0-9]" ""))]
-      [tag {:name tag-name}
+    (let [tag (keyword (str "h" (.getLevel this)))]
+      [tag {:id (header->tag-name this)}
        (map blog-html (children this))])))
 
 (extend-type com.vladsch.flexmark.ast.StrongEmphasis

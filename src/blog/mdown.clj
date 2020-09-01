@@ -387,7 +387,7 @@
 
     (when nav
       [:div {:class "blog-masthead"}
-       ])
+       nav])
     [:div.blog-header
        [:div.container
         [:h1.blog-title title]

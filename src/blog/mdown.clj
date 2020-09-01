@@ -440,14 +440,9 @@
    :title "The HTML Tax"
    :subheading "Html is a poor medium for specifying user interfaces"
    :nav [:div {:class "container"}
-         [:nav.nav.blog-nav " "
-          ;; [:a.nav-link.active {:href "#"}
-          ;;  "Treemaps are awesome!"]
-          ;; [:a.nav-link {:href "treemap-demo.html"}
-          ;;  "Treemap Demo"]
-          ;; [:a.nav-link {:href "https://github.com/phronmophobic/treemap-clj"}
-          ;;  "Code on Github"]
-          ]]
+         [:nav.nav.blog-nav
+          [:a.nav-link
+           "&nbsp;"]]]
    :src "markdown/html-tax.md"
    :out "resources/public/html-tax/html-tax.html"})
 

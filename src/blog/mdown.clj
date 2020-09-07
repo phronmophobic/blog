@@ -191,6 +191,15 @@
 (defprotocol IBlogHtml
   (blog-html [this]))
 
+(extend-type Object
+  IBlogHtml
+  (blog-html [this]
+    (println "No implementation of method :blog-html found for class: " (type this))
+    (println "line: " (.getLineNumber this))
+    (let [s (str (.getChars this))]
+      (println (subs s 0 (min 30 (count s)))))
+    (throw (Exception. ""))))
+
 (defn hiccup-node [content]
   (HiccupNode. content))
 

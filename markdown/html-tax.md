@@ -1,8 +1,13 @@
 {{table-of-contents/}}
 
+> Prudence, indeed, will dictate that data formats long established should not be changed for light and transient causes. Accordingly all experience hath shown, that programmers are more disposed to suffer, while evils are sufferable, than to right themselves by abolishing the forms to which they are accustomed.
+> {{blockquote-footer}}Thomas Json{{/blockquote-footer}}
+
 # Introduction
 
-It's time we start moving away from specifying our user interfaces in HTML{{footnote}}To the annoyance pedants, I use "HTML" when I'm actually referring to HTML + related css/js.{{/footnote}}. This idea may seem crazy since the web is one of the best, if not _the_ best platform for distributing software. Below is an overview of how HTML degrades the quality of our user interfaces and provides a plan for ditching the venerable `<div/>`.
+It's time we start moving away from specifying our user interfaces in HTML. This idea may seem crazy since the web is one of the best, if not _the_ best platform for distributing software. Below is an overview of how HTML degrades the quality of our user interfaces and provides a plan for ditching the venerable `<div/>`.
+
+<!-- {{footnote}}To the annoyance pedants, I use "HTML" when I'm actually referring to HTML + related css/js.{{/footnote}} -->
 
 
 # The Problem
@@ -34,6 +39,30 @@ For this post, we'll further simplify our definition to focus on
 2. **Events**: user input from the mouse and keyboard.
 3. **UI State Management**: state unrelated to our application model necessary for handling graphics and events (eg. keeping track of which element has focus).
 
+# What is HTML?
+
+At 1,297 pages, the [HTML Living Standard](https://html.spec.whatwg.org/print.pdf) is expansive. In the next sections, we're going to beat up a bit on HTML and it's important to clarify which parts of HTML are problematic. HTML isn't all bad and parts of it are straightforward, pragmatic, and endearing. To really tease apart the good from the bad, we'll have to retread some definitions we all already know.
+
+> Hypertext Markup Language (HTML) is the standard markup language for documents designed to be displayed in a web browser. It can be assisted by technologies such as Cascading Style Sheets (CSS) and scripting languages such as JavaScript. 
+> {{blockquote-footer}}[HTML - Wikipedia](https://en.wikipedia.org/wiki/HTML){{/blockquote-footer}}
+
+Logically, HTML is a tree of HTML elements. Each element has a tag name and optional attributes. Depending on the tag type, an element may also have other html elements as children. HTML markup contains special elements like `<div>` and `<span>` that the browser interprets to display the HTML document and provide interactivity. 
+
+**For the rest of this post**, when we refer HTML, we're really referring to the special meaning given to the special elements. Further, we're really only focusing on the special elements that affect the graphics, event model, and state management of user interfaces targeting the web browser.
+
+While we're clearing the air, I'd like to emphasize there is absolutely nothing wrong with defining a user interface in terms of a tree of tagged elements and attributes. The issues brought up in this post focus solely on the semantics associated with the special elements imparted by the browser. Practically speaking, that means that if you're using a ui framework that doesn't care whether you're using `<div>`s, `<View>`s, or any other specific tag type, then your framework is harmony with the views of this post. Fortunately, most popular frameworks like React, re-frame, Angular, or any framework that allows user defined components are philosophically compatible.
+
+<!-- > HTML uses "markup" to annotate text, images, and other content for display in a Web browser.  -->
+<!-- > {{blockquote-footer}}[HTML - MDN](https://developer.mozilla.org/en-US/docs/Web/HTML){{/blockquote-footer}} -->
+
+
+<!-- > HTML markup includes special "elements" such as `<head>`, `<title>`, `<body>`, `<header>`, `<footer>`, `<article>`, `<section>`, `<p>`, `<div>`, `<span>`, `<img>`, `<aside>`, `<audio>`, `<canvas>`, `<datalist>`, `<details>`, `<embed>`, `<nav>`, `<output>`, `<progress>`, `<video>`, `<ul>`, `<ol>`, `<li>` and many others. -->
+<!-- > {{blockquote-footer}}[MDN HMTL Reference](https://developer.mozilla.org/en-US/docs/Web/HTML){{/blockquote-footer}} -->
+
+<!-- ![asdfd](https://media.prod.mdn.mozit.cloud/attachments/2012/07/09/3704/07b3e5bb546840a09bb35d45b36009a6/Content_categories_venn.png) -->
+
+<!-- https://html.spec.whatwg.org/multipage/indices.html#element-content-categories -->
+
 ## Graphics
 
 ### What is a div?
@@ -43,6 +72,8 @@ The easiest way to show that HTML is a bad fit for specifying user interfaces is
 Since designers don't work in terms of HTML elements, a considerable amount of effort is spent reimplementing UI designs in HTML. Since HTML maps poorly to UI designs, small changes in design can often mean disproportionately large changes in the HTML representation. Small design tweaks can take a considerable amount of work to reimplement. This is a huge waste of time.
 
 Flexbox and other improvements have eased the process of reimplementing UI designs into HTML/css, but HTML still remains an unnatural fit for specifying UI designs. Most graphic design tools don't even bother to export HTML because HTML's inadequacies mean that it's difficult to figure out what an "Export to HTML" option should produce.
+
+
 
 ### HTML makes poor data
 
@@ -56,6 +87,11 @@ This is further complicated by the fact that rendering a web page isn't just abo
 
 Data should be semantically transparent. A data format should have meaning outside of any specific implementation. It shouldn't mean "whatever shows up in Chrome today". There's a lot of times when you'd like to generically debug, profile, manipulate, and inspect a UI component, but it's so cumbersome that that we don't do it.
 
+It may seem like I'm being a bit unfair and I wish that were true, but the elusive nature of HTML isn't isn't my interpretation, it's part of the standard.
+
+> User agents are not required to present HTML documents in any particular way. However, this section provides a set of suggestions for rendering HTML documents that, if followed, are likely to lead to a user experience that closely resembles the experience intended by the documents' authors.
+> {{blockquote-footer}}[The HTML Living Standard](https://html.spec.whatwg.org/multipage/rendering.html#rendering){{/blockquote-footer}}
+
 ### HTML is lossy
 
 We haven't talked about what kind of data format we should be using yet, but whichever format we choose, we want it to be lossless. In other words, we should be able to convert our graphics representation to another similar format and back again without any loss of information. So many workflows struggle because their UIs are defined in HTML and HTML is awful for generic processing. Sure, it's easy to manipulate the HTML and produce other valid HTML, but the semantic meaning of the HTML is opaque. For example, with a sane graphical format you could automatically validate a UI component against a style guide that specifies colors, paddings, spacing, and minimum sizes for interactable elements. If your interface is encoded in HTML, it's very difficult.
@@ -64,7 +100,7 @@ We have all these fancy, functional frameworks that let you build interfaces out
 
 ## Events
 
-Event handling in the browser is fairly reasonable. Any idiosyncrasies can be papered over by libraries. However, since the browser's event system is necessarily coupled to the graphical output of HTML, any tooling or testing that relies on events will require a full browser engine. If want to know what happens when the user clicks the mouse at the coordinate `(x,y)`, then you need to know which elements contain `(x,y)` which requires rendering HTML. If you've ever tried to set up automated UI testing like selenium, then you have paid the HTML tax on event handling. 
+Event handling in the browser is fairly reasonable. Any idiosyncrasies can be papered over by libraries. However, since the browser's event system is necessarily coupled to the graphical output of HTML, any tooling or testing that relies on events will require a full browser engine. If want to know what happens when the user clicks the mouse at the coordinate `(x,y)`, then you need to know which elements contain `(x,y)` which requires rendering HTML. If you've ever tried to set up automated UI testing like Selenium, then you have paid the HTML tax on event handling.
 
 ## UI State Management
 
@@ -76,6 +112,7 @@ Notable exceptions include:
 - text selection
 - focus
 - hover state
+- `<img/>` src loading
 
 Hopefully, your interface is happy using the builtin behavior because if not, you'll need to resort to a gamut of hacky workarounds.{{footnote}}[Code Mirror example 1](https://github.com/codemirror/CodeMirror/blob/0b64369b54503150f054abda50359c76f00f484f/src/edit/mouse_events.js#L400){{/footnote}} {{footnote}}[Code Mirror Example 2](https://github.com/codemirror/CodeMirror/blob/c41dec13675da74fb575006a502d7daee6abdafe/src/input/ContentEditableInput.js#L250){{/footnote}} {{footnote}}[Code Mirror Example 3](https://github.com/codemirror/CodeMirror/blob/c41dec13675da74fb575006a502d7daee6abdafe/src/input/ContentEditableInput.js#L94){{/footnote}} {{footnote}}[Code Mirror Example 4](https://github.com/codemirror/CodeMirror/blob/b5ce22f1e350431adaefbad40cbfc54dbfdb1c77/src/input/input.js#L122){{/footnote}}
 
@@ -126,7 +163,7 @@ When we minify and/or compile our code into javascript, we produce javascript th
 
 ## Easier testing
 
-Setting up selenium or other anotherbrowser automation tool to test our code is a huge pain. We should be able to test our UI code as simply as we test all of our other code.
+Setting up Selenium or other another browser automation tool to test our code is a huge pain. We should be able to test our UI code as simply as we test all of our other code.
 
 ## Access to More Platforms
 
@@ -179,7 +216,17 @@ Additionally, whichever format we choose will be acting as an intermediate repre
 
 Choosing a representation that makes a good IR also has the benefit that it reduces our risk of choosing the wrong format. Since an intermediate representation is already suited for translation, it means we can easily switch to a better format should the need arise.
 
+Since our IR will be used for tooling we will desire to be able to generically manipulate and inspect the format. Transformations and inspection should be achievable without a web browser. Examples of inspection and transformation
+
+* Generically walk elements and sub elements
+* Produce images from format
+* Get layout information of elements and subelements
+* determine which event handlers would be triggered by which events
+
+
 <!-- # Conclusion -->
+
+The problem isn't react, javascript, or xml. it's really about working directly `<div>` and `<span>`. It's ok if `<div>`s and `<span>`s come out the other end. It's not that html is impossible to use, it just thatHtml is just really difficult to build on top of.Html is an unnecessary tax that  eats up time and energy that could otherwise be better spent.
 
 
 

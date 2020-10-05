@@ -340,6 +340,12 @@
   [:span {:title "everybody is each shooting just one foot in this metaphor"}
    "foots"])
 
+(defmethod markdown-macro "square-bracket-left" [macro]
+  "[")
+
+(defmethod markdown-macro "square-bracket-right" [macro]
+  "]")
+
 ;; (defmethod markdown-macro "footnote" [macro]
 ;;   (let [idx ]
 ;;     [:a {:href "#"}

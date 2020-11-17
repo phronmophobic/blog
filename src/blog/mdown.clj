@@ -275,6 +275,12 @@
     [:a {:href (-> this .getUrl str)}
      (-> this (.getText) str)]))
 
+(extend-type com.vladsch.flexmark.ast.AutoLink
+  IBlogHtml
+  (blog-html [this]
+    [:a {:href (-> this .getUrl str)}
+     (-> this (.getText) str)]))
+
 (extend-type com.vladsch.flexmark.ast.Image
   IBlogHtml
   (blog-html [this]
@@ -314,6 +320,12 @@
   (blog-html [this]
     nil))
 
+(extend-type com.vladsch.flexmark.ast.HtmlInlineComment
+  IBlogHtml
+  (blog-html [this]
+    nil))
+
+
 ;; (extend-type com.vladsch.flexmark.ast.OrderedList
 ;;   IBlogHtml
 ;;   (blog-html [this]
@@ -332,7 +344,7 @@
    (map blog-html (drop-last (children macro)))])
 
 (defmethod markdown-macro "contemplation-break" [macro]
-  [:div {:style "width: 90%;height: 500px;"
+  [:div {:style "width: 90%;height: 500px;border-top: #c4c4c4 1px solid;border-bottom: #c4c4c4 1px solid;margin-bottom:30px;"
          :title "This space intentionally left blank for contemplation."}])
 
 
@@ -345,6 +357,12 @@
 
 (defmethod markdown-macro "square-bracket-right" [macro]
   "]")
+
+(defmethod markdown-macro "quote" [macro]
+  (let [childs (->> (children macro)
+                    (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.MacroClose %))
+                    (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.Macro %)))]
+    (hiccup/h (clojure.string/join (map #(.getChars %) childs)))))
 
 ;; (defmethod markdown-macro "footnote" [macro]
 ;;   (let [idx ]
@@ -379,44 +397,50 @@
       parse
       blog-html))
 
-(defn blog-page [title post-subheading nav body]
-  [:html {:lang "en"}
-   [:head
+(defn blog-page [{:keys [title
+                         post-subheading
+                         nav
+                         src
+                         asset-prefix]
+                  :as post}]
+  (let [body (parse-blog src)]
+    [:html {:lang "en"}
+     [:head
 
-    [:meta {:charset "utf-8"}]
-    [:meta {:name "viewport" :content "width=device-width, initial-scale=1, shrink-to-fit=no"}] 
-    ;; [:meta {:name "description" :content ""}]
-    [:meta {:name "author" :content "Adrian smith"}]
+      [:meta {:charset "utf-8"}]
+      [:meta {:name "viewport" :content "width=device-width, initial-scale=1, shrink-to-fit=no"}] 
+      ;; [:meta {:name "description" :content ""}]
+      [:meta {:name "author" :content "Adrian smith"}]
 
-    ;; <link rel="icon" href="../../favicon.ico">
-    [:link {:rel "icon"
-            :href "favicon.ico"}]
-    [:title title]
+      ;; <link rel="icon" href="../../favicon.ico">
+      [:link {:rel "icon"
+              :href (str asset-prefix "favicon.ico")}]
+      [:title title]
 
-    [:link {:href "bootstrap.min.css"
-            :rel "stylesheet"}]
-    [:link {:href "blog.css"
-            :rel "stylesheet"}]]
+      [:link {:href (str asset-prefix "bootstrap.min.css")
+              :rel "stylesheet"}]
+      [:link {:href (str asset-prefix "blog.css")
+              :rel "stylesheet"}]]
 
-   [:body
+     [:body
 
-    (when nav
-      [:div {:class "blog-masthead"}
-       nav])
-    [:div.blog-header
+      (when nav
+        [:div {:class "blog-masthead"}
+         nav])
+      [:div.blog-header
        [:div.container
         [:h1.blog-title title]
         [:p.lead.blog-description post-subheading]]]
 
 
-    [:div.container
-     [:div.row
-      [:div.col-sm-8.blog-main
-       [:div.blog-post
-        body]]]]
+      [:div.container
+       [:div.row
+        [:div.col-sm-8.blog-main
+         [:div.blog-post
+          body]]]]
 
 
-    ]]
+      ]])
   )
 
 
@@ -450,6 +474,19 @@
    :src "markdown/functional-ui.md"
    :out "resources/public/functional-ui.html"})
 
+
+(defpost what-is-a-ui
+  {:id :what-is-a-ui
+   :title "What is a User Interface?"
+   :subheading "The design of Membrane"
+   :nav [:div {:class "container"}
+         [:nav.nav.blog-nav
+          [:a.nav-link
+           "&nbsp;"]]]
+   :asset-prefix "what-is-a-user-interface/"
+   :src "markdown/what-is-a-user-interface.md"
+   :out "resources/public/what-is-a-user-interface.html"})
+
 (defpost html-tax-post
   {:id :html-tax
    :title "The HTML Tax"
@@ -458,8 +495,9 @@
          [:nav.nav.blog-nav
           [:a.nav-link
            "&nbsp;"]]]
+   :asset-prefix "html-tax/"
    :src "markdown/html-tax.md"
-   :out "resources/public/html-tax/html-tax.html"})
+   :out "resources/public/html-tax.html"})
 
 (defn render-post! [{:keys [title
                             subheading
@@ -467,10 +505,7 @@
                             src
                             out]
                      :as post}]
-  (let [page-html (blog-page title
-                             subheading
-                             nav
-                             (parse-blog src))
+  (let [page-html (blog-page post)
         html-str (html page-html)]
     (spit (:out post) html-str)))
 

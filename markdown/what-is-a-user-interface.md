@@ -1,11 +1,5 @@
 {{table-of-contents/}}
 
-<!-- Fully Functional User Interfaces -->
-<!-- The design of membrane -->
-<!-- Part I: What is a User Interface? -->
-
-<!-- # Preface -->
-
 _This post is the first in a series of posts explaining the design principles behind [membrane](https://github.com/phronmophobic/membrane), a cross platform library for building fully functional user interfaces in clojure(script)._
 
 
@@ -45,11 +39,11 @@ Here are some of the questions to get started.
 
 # What is a user interface?
 
-It may seem pendantic to even ask such a rudimentary question, but we're going to do it anyway. As is clojure tradition, we'll start with word etymologies.
+It may seem pedantic to even ask such a rudimentary question, but we're going to do it anyway. As is clojure tradition, we'll start with word etymologies.
 
 Interface stems from the two roots, _inter_ and _face_.
 
-**inter**- (prefix): "between", from latin.
+**inter**- (prefix): "between", from Latin.
 
 Between what? Obviously, it's between the user and "something else". We'll call that "something else" an application. One subtle implication of this definition is that the user interface isn't actually a part of the application itself, or at the very least, the user interface is detachable and replaceable. That would certainly be nice. Having a detachable user interface would be great for testing, debugging, or if we simply would like to upgrade a user interface without major surgery.
 
@@ -80,7 +74,7 @@ User interfaces have several options for communicating with the user. Generally,
 
 The Functional UI Model defines a user interface as the combination of the following two pure functions:
     
-1. **Event Function** - a pure function which receives the application state and an event and returns data specifying the user's intent (eg. add a new todo item to the todo list). This faciliates communication from the user to the application.
+1. **Event Function** - a pure function which receives the application state and an event and returns data specifying the user's intent (eg. add a new todo item to the todo list). This facilitates communication from the user to the application.
 2. **View Function** - a pure function which receives the relevant application state as an argument and returns data specifying _what_ to draw (how to draw the data will be provided elsewhere). This facilitates communication from the application to the user.
 
 These two functions are the building blocks of user interfaces. As a functional UI library, the main goal of membrane is to make it easy to construct these two functions. 
@@ -92,9 +86,9 @@ Some important features of the Function UI Model are:
 
 The real trick is gather the necessary tips, tricks, and techniques necessary to build the complex, feature rich user interfaces that users have come to expect just by defining and composing view and event functions. The number one rule of the Functional UI Model is that the event and view functions are pure and should avoid side effects and global state. Most of the benefits of the model derive from the purity of these functions and introducing impurities is the easiest way to forfeit the benefits of the Functional UI Model.
 
-The view and event functions are low level and generally won't be implemented directly. Libaries can and should build abstractions in terms of the view and event functions that are easier to work with. The real power comes from using this model at the bottom. It means you can replace and interoperate with any components defined using the Function UI Model.
+The view and event functions are low level and generally won't be implemented directly. Libraries can and should build abstractions in terms of the view and event functions that are easier to work with. The real power comes from using this model at the bottom. It means you can replace and interoperate with any components defined using the Function UI Model.
 
-We'll talk more about how to compose user interfaces in future posts, but a key feature of the Functional UI Model is that it allows us to talk about how to compare, replace, substitute, and inspect user interfaes. Crucially, it even allows us to take user interfaces defined using _different_ UI frameworks and make them play well together.
+We'll talk more about how to compose user interfaces in future posts, but a key feature of the Functional UI Model is that it allows us to talk about how to compare, replace, substitute, and inspect user interfaces. Crucially, it even allows us to take user interfaces defined using _different_ UI frameworks and make them play well together.
 
 Simply declaring that user interfaces should be built using pure functions may seem like cheating. What about timers, network connections, databases and all the rest? Pushing all the icky bits out of the part of the code labeled "user interface" and relabeling it the "application" doesn't really change anything... Or does it? It's important for user interfaces to connect to the real world, but we'll have to build out our conceptual framework a little more before we tackle that problem. This post will ignore that issue for now, but we will come back to it in a future post. 
 
@@ -108,7 +102,7 @@ Most discussions about user interface programming use words like view, event, co
 The goal for membrane is to use these words more precisely (at least within the context of membrane documentation). Generally, definitions are meant to clarify and adhere to common usage{{footnote}}The etymology of "display" would be great to use instead of render, but the common usage of display makes it a poor fit{{/footnote}}, but there are only so many good words ¯\_(ツ)_/¯.
 
 
-**Event**: Data representing the actions of a user. Examples of events are mouse clicks, and keypresses from a keyboard.
+**Event**: Data representing the actions of a user. Examples of events are mouse clicks, and key presses from a keyboard.
 
 **Intent**: Data representing a user intent. Examples of user intents are "delete a todo list item", "open a document", "navigate to a URL".
 
@@ -167,7 +161,7 @@ Given a UI component, what happens when when the user clicks at mouse position `
 
 #### Default Behavior
 
-When an event comes in, it gets processed through a gauntlet of default behavior before application code like react sees it. The event model bakes in hit detection, scrolling, text cursor management, focus, hover state, `<img/>` src loading, text selection, and more. Default behavior that is consistent accross applications is a really good default, but there are often times when tweaking, augmenting, or preventing default behavior is desired. The most common example of altering default behavior is react's [controlled components](https://reactjs.org/docs/forms.html#controlled-components), but that only covers a few cases. You can completely override default behavior using `.stopPropagation` and `.preventDefault`, but these imperative methods are sledge hammers compared to their functional counterparts. They also fail to address the most typical use case which is augmenting or tweaking default behavior. Unfortunately, `.stopPropgation` and `.preventDefault` are all or nothing. There's no way to retain most of the default behavior with some application specific tweaks.
+When an event comes in, it gets processed through a gauntlet of default behavior before application code like react sees it. The event model bakes in hit detection, scrolling, text cursor management, focus, hover state, `<img/>` src loading, text selection, and more. Default behavior that is consistent across applications is a really good default, but there are often times when tweaking, augmenting, or preventing default behavior is desired. The most common example of altering default behavior is react's [controlled components](https://reactjs.org/docs/forms.html#controlled-components), but that only covers a few cases. You can completely override default behavior using `.stopPropagation` and `.preventDefault`, but these imperative methods are sledge hammers compared to their functional counterparts. They also fail to address the most typical use case which is augmenting or tweaking default behavior. Unfortunately, `.stopPropagation` and `.preventDefault` are all or nothing. There's no way to retain most of the default behavior with some application specific tweaks.
 
 An example of a library that requires a mess of workarounds due to the baked in event model is [CodeMirror](https://codemirror.net/) {{footnote}}[Code Mirror example 1](https://github.com/codemirror/CodeMirror/blob/0b64369b54503150f054abda50359c76f00f484f/src/edit/mouse_events.js#L400){{/footnote}} {{footnote}}[Code Mirror Example 2](https://github.com/codemirror/CodeMirror/blob/c41dec13675da74fb575006a502d7daee6abdafe/src/input/ContentEditableInput.js#L250){{/footnote}} {{footnote}}[Code Mirror Example 3](https://github.com/codemirror/CodeMirror/blob/c41dec13675da74fb575006a502d7daee6abdafe/src/input/ContentEditableInput.js#L94){{/footnote}} {{footnote}}[Code Mirror Example 4](https://github.com/codemirror/CodeMirror/blob/b5ce22f1e350431adaefbad40cbfc54dbfdb1c77/src/input/input.js#L122){{/footnote}}. 
 
@@ -191,9 +185,9 @@ It would be really straightforward for the re-frame library to solve this issue 
 
 ### Graphics
 
-Displaying program state is a one of the main responsibilities of a user interface. Unfortunately, the graphical building blocks from platform toolkits don't match the building blocks used by designers. Your not going to find a `<div/>` tool in Photoshop or Illustrator. The browser has reasonable support for text and images, but many of the the common elements a designer would use either don't exist are awkward to implement.
+Displaying program state is a one of the main responsibilities of a user interface. Unfortunately, the graphical building blocks from platform toolkits don't match the building blocks used by designers. You're not going to find a `<div/>` tool in Photoshop or Illustrator. The browser has reasonable support for text and images, but many of the the common elements a designer would use either don't exist or are awkward to implement.
 
-Not only is there a mismatch between the graphical elements used by designers and programmers, it's very common for UI code to use graphical elements that inextricably couple state and events. As an example, consider a checkbox. Is it possible to draw just the checkbox without any of the associated behavior? Are the grapical elements that produce the checkbox able to be extracted and inspected? As with just about every other simple task on the web, the answer is probably "sorta" with a dozen Stack Overflow posts explaining a handful of options that depend on various subtely different circumstances. This is not a great place to be.
+Not only is there a mismatch between the graphical elements used by designers and programmers, it's very common for UI code to use graphical elements that inextricably couple state and events. As an example, consider a checkbox. Is it possible to draw just the checkbox without any of the associated behavior? Are the graphical elements that produce the checkbox able to be extracted and inspected? As with just about every other simple task on the web, the answer is probably "sorta" with a dozen Stack Overflow posts explaining a handful of options that depend on various subtlety different circumstances. This is not a great place to be.
 
 The building blocks we're using to specify UI graphics are unnecessarily complicated. At the bottom, we have `<div/>`s, `<span/>`s, `<input/>`s , etc. and none of these can be broken down into simpler pieces. Even just measuring the size of a snippet of HTML requires a ton of global environmental information. When we use complex, stateful constructs at the bottom, it hinders our ability to generically process and manipulate user interfaces. Consequently, tooling and testing for user interfaces suffers.
 

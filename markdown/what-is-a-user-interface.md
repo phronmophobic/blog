@@ -81,7 +81,7 @@ User interfaces have several options for communicating with the user. Generally,
 The Functional UI Model defines a user interface as the combination of the following two pure functions:
     
 1. **Event Function** - a pure function which receives the application state and an event and returns data specifying the user's intent (eg. add a new todo item to the todo list). This faciliates communication from the user to the application.
-2. **View Function** - a pure function which receives the relevant application state as an argument and returns data specifying _what_ to draw (how draw the data will be provided elsewhere). This facilitates communication from the application to the user.
+2. **View Function** - a pure function which receives the relevant application state as an argument and returns data specifying _what_ to draw (how to draw the data will be provided elsewhere). This facilitates communication from the application to the user.
 
 These two functions are the building blocks of user interfaces. As a functional UI library, the main goal of membrane is to make it easy to construct these two functions. 
 
@@ -105,7 +105,8 @@ Defining user interfaces as the composition of a view and an event function also
 
 Most discussions about user interface programming use words like view, event, component, render, display, and others loosely. Loose definitions make it difficult to have nuanced conversations about design decisions. Similar to how having crisp definitions for "concurrency" and "parallelism" streamline and clarify discussions around multi-threaded programming, having clear, descriptive vocabulary for user interface concepts is important for discussing UI design.
 
-The definitions below generally have fuzzy generic meanings. The goal for membrane is to use these words more precisely (at least within the context of membrande documentation).
+The goal for membrane is to use these words more precisely (at least within the context of membrane documentation). Generally, definitions are meant to clarify and adhere to common usage{{footnote}}The etymology of "display" would be great to use instead of render, but the common usage of display makes it a poor fit{{/footnote}}, but there are only so many good words ¯\_(ツ)_/¯.
+
 
 **Event**: Data representing the actions of a user. Examples of events are mouse clicks, and keypresses from a keyboard.
 
@@ -147,7 +148,7 @@ Some of the current challenges in UI programming:
 * UI manipulation on the "inside" of components rather than at the edges is common
 * Heavy reliance on global state
 * UI workflows are highly platform dependent
-  * taking an iOS app and porting it to the web or Android isn't just a rewrite, it also requires a completely different set of tools, languages, and libraries{{footnote}}I know web browsers run on almost every type of device, but I consider web browsers to be their own platform. The ubiqUIty of the web shows that users interfaces don't need to be coupled to a single platform. However, the web is inextricably coupled to html/css/javascript.{{/footnote}}
+  * taking an iOS app and porting it to the web or Android isn't just a rewrite, it also requires a completely different set of tools, languages, and libraries{{footnote}}I know web browsers run on almost every type of device, but I consider web browsers to be their own platform. The ubiquity of the web shows that users interfaces don't need to be coupled to a single platform. However, the web is inextricably coupled to html/css/javascript.{{/footnote}}
 
 React is great, but does it really free us from the grip of the underlying OO platform toolkits? The above challenges are all symptoms of a system that is not based on values. We're not going to spend any time rehashing the [value of values](https://www.infoq.com/presentations/Value-Values/) other than to say we should apply the same principles to the full UI stack. Acknowledging and alleviating the limitations imposed by the underlying toolkits opens up new opportunities for UI libraries to innovate.
 
@@ -168,7 +169,7 @@ Given a UI component, what happens when when the user clicks at mouse position `
 
 When an event comes in, it gets processed through a gauntlet of default behavior before application code like react sees it. The event model bakes in hit detection, scrolling, text cursor management, focus, hover state, `<img/>` src loading, text selection, and more. Default behavior that is consistent accross applications is a really good default, but there are often times when tweaking, augmenting, or preventing default behavior is desired. The most common example of altering default behavior is react's [controlled components](https://reactjs.org/docs/forms.html#controlled-components), but that only covers a few cases. You can completely override default behavior using `.stopPropagation` and `.preventDefault`, but these imperative methods are sledge hammers compared to their functional counterparts. They also fail to address the most typical use case which is augmenting or tweaking default behavior. Unfortunately, `.stopPropgation` and `.preventDefault` are all or nothing. There's no way to retain most of the default behavior with some application specific tweaks.
 
-An example of a library that reqUIres a mess of workarounds due to the baked in event model is [CodeMirror](https://codemirror.net/) {{footnote}}[Code Mirror example 1](https://github.com/codemirror/CodeMirror/blob/0b64369b54503150f054abda50359c76f00f484f/src/edit/mouse_events.js#L400){{/footnote}} {{footnote}}[Code Mirror Example 2](https://github.com/codemirror/CodeMirror/blob/c41dec13675da74fb575006a502d7daee6abdafe/src/input/ContentEditableInput.js#L250){{/footnote}} {{footnote}}[Code Mirror Example 3](https://github.com/codemirror/CodeMirror/blob/c41dec13675da74fb575006a502d7daee6abdafe/src/input/ContentEditableInput.js#L94){{/footnote}} {{footnote}}[Code Mirror Example 4](https://github.com/codemirror/CodeMirror/blob/b5ce22f1e350431adaefbad40cbfc54dbfdb1c77/src/input/input.js#L122){{/footnote}}. 
+An example of a library that requires a mess of workarounds due to the baked in event model is [CodeMirror](https://codemirror.net/) {{footnote}}[Code Mirror example 1](https://github.com/codemirror/CodeMirror/blob/0b64369b54503150f054abda50359c76f00f484f/src/edit/mouse_events.js#L400){{/footnote}} {{footnote}}[Code Mirror Example 2](https://github.com/codemirror/CodeMirror/blob/c41dec13675da74fb575006a502d7daee6abdafe/src/input/ContentEditableInput.js#L250){{/footnote}} {{footnote}}[Code Mirror Example 3](https://github.com/codemirror/CodeMirror/blob/c41dec13675da74fb575006a502d7daee6abdafe/src/input/ContentEditableInput.js#L94){{/footnote}} {{footnote}}[Code Mirror Example 4](https://github.com/codemirror/CodeMirror/blob/b5ce22f1e350431adaefbad40cbfc54dbfdb1c77/src/input/input.js#L122){{/footnote}}. 
 
 <!-- #### Testing and Automation -->
 
@@ -185,7 +186,7 @@ The issue is fairly long, but I'll try to summarize. Basically, re-frame's state
 
 > Except, that means you have to pass frame down through the entire function call tree which is arduous. Really arduous. There's something completely delicious and simple about the use of global dispatch and subscribe, even though it is clearly evil in some ways.
 
-It would be really straightforward for the re-frame library to solve this issue if the event model in the browser was pluggable, but since the event model is baked in, it adds a mountain of incidental complexity. <!-- Conversely, since the event model in `membrane` is pluggable, it would be an easy fix {{footnote}}You can already try membrane's experimental [re-frame integration](https://github.com/phronmophobic/membrane-re-frame-example). Multiple re-frame instances still doesn't qUIte work since in addition to parameterizing `dispatch` and `subscribe`, there's a few other places `re-frame` relies on global state.{{/footnote}} -->
+It would be really straightforward for the re-frame library to solve this issue if the event model in the browser was pluggable, but since the event model is baked in, it adds a mountain of incidental complexity. <!-- Conversely, since the event model in `membrane` is pluggable, it would be an easy fix {{footnote}}You can already try membrane's experimental [re-frame integration](https://github.com/phronmophobic/membrane-re-frame-example). Multiple re-frame instances still doesn't quite work since in addition to parameterizing `dispatch` and `subscribe`, there's a few other places `re-frame` relies on global state.{{/footnote}} -->
 
 
 ### Graphics
@@ -194,7 +195,7 @@ Displaying program state is a one of the main responsibilities of a user interfa
 
 Not only is there a mismatch between the graphical elements used by designers and programmers, it's very common for UI code to use graphical elements that inextricably couple state and events. As an example, consider a checkbox. Is it possible to draw just the checkbox without any of the associated behavior? Are the grapical elements that produce the checkbox able to be extracted and inspected? As with just about every other simple task on the web, the answer is probably "sorta" with a dozen Stack Overflow posts explaining a handful of options that depend on various subtely different circumstances. This is not a great place to be.
 
-The building blocks we're using to specify UI graphics are unnecessarily complicated. At the bottom, we have `<div/>`s, `<span/>`s, `<input/>`s , etc. and none of these can be broken down into simpler pieces. Even just measuring the size of a snippet of HTML reqUIres a ton of global environmental information. When we use complex, stateful constructs at the bottom, it hinders our ability to generically process and manipulate user interfaces. Consequently, tooling and testing for user interfaces suffers.
+The building blocks we're using to specify UI graphics are unnecessarily complicated. At the bottom, we have `<div/>`s, `<span/>`s, `<input/>`s , etc. and none of these can be broken down into simpler pieces. Even just measuring the size of a snippet of HTML requires a ton of global environmental information. When we use complex, stateful constructs at the bottom, it hinders our ability to generically process and manipulate user interfaces. Consequently, tooling and testing for user interfaces suffers.
 
 For example, if someone hands you some hiccup based mark up, `[:div.foobar]`. How do you:
 * measure it's bounds?

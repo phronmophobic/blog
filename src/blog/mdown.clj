@@ -398,7 +398,7 @@
       blog-html))
 
 (defn blog-page [{:keys [title
-                         post-subheading
+                         subheading
                          nav
                          src
                          asset-prefix]
@@ -430,7 +430,7 @@
       [:div.blog-header
        [:div.container
         [:h1.blog-title title]
-        [:p.lead.blog-description post-subheading]]]
+        [:p.lead.blog-description subheading]]]
 
 
       [:div.container
@@ -478,7 +478,7 @@
 (defpost what-is-a-ui
   {:id :what-is-a-ui
    :title "What is a User Interface?"
-   :subheading "The design of Membrane"
+   :subheading "How to build a functional UI library from scratch: Part I"
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav
           [:a.nav-link

@@ -5,9 +5,6 @@ _This post is the first in a series of posts explaining the design principles be
 
 # Introduction
 
-
-
-
 Building user interfaces is harder than it ought to be. 
 
 When talking to UI developers, I hear one of two sentiments. Either:
@@ -37,9 +34,9 @@ Here are some of the questions to get started.
 <!-- {{contemplation-break/}} -->
 
 
-# What is a user interface?
+# What is a User Interface?
 
-It may seem pedantic to even ask such a rudimentary question, but we're going to do it anyway. As is clojure tradition, we'll start with word etymologies.
+As is clojure tradition, we'll start with word etymologies.
 
 Interface stems from the two roots, _inter_ and _face_.
 
@@ -49,7 +46,7 @@ Between what? Obviously, it's between the user and "something else". We'll call 
 
 Currently, developing a UI is like working on a sticky, growing ball of goo that oozes onto everything it touches before eventually absorbing your whole application. Yuck. If possible, we would much rather have thin, clean user interfaces that aren't sticky, ravenous blobs.
 
-**face**- "a plane surface regarded as the common boundary of two bodies" {{footnote}}<https://www.etymonline.com/word/interface>{{/footnote}}
+**face**- "a plane surface regarded as the common boundary of two bodies" {{footnote}}[Word etymology](https://www.etymonline.com/word/interface){{/footnote}}
 
 <!-- 2 : a surface forming a common boundary of two bodies, spaces, or phases  -->
 
@@ -90,7 +87,7 @@ The view and event functions are low level and generally won't be implemented di
 
 We'll talk more about how to compose user interfaces in future posts, but a key feature of the Functional UI Model is that it allows us to talk about how to compare, replace, substitute, and inspect user interfaces. Crucially, it even allows us to take user interfaces defined using _different_ UI frameworks and make them play well together.
 
-Simply declaring that user interfaces should be built using pure functions may seem like cheating. What about timers, network connections, databases and all the rest? Pushing all the icky bits out of the part of the code labeled "user interface" and relabeling it the "application" doesn't really change anything... Or does it? It's important for user interfaces to connect to the real world, but we'll have to build out our conceptual framework a little more before we tackle that problem. This post will ignore that issue for now, but we will come back to it in a future post. 
+Simply declaring that user interfaces should be built using pure functions may seem like cheating. What about timers, network connections, databases, and all the rest? Pushing all the icky bits out of the part of the code labeled "user interface" and relabeling it the "application" doesn't really change anything... Or does it? It's important for user interfaces to connect to the real world, but we'll have to build out our conceptual framework a little more before we tackle that problem. This post will ignore that issue for now, but we will come back to it in a future post. 
 
 Defining user interfaces as the composition of a view and an event function also highlights that at the end of the day, that's what a user interface is all about. It's so easy to get wrapped up in the day to day that we fail to consider the essence of what we're trying to accomplish.
 
@@ -102,7 +99,7 @@ Most discussions about user interface programming use words like view, event, co
 The goal for membrane is to use these words more precisely (at least within the context of membrane documentation). Generally, definitions are meant to clarify and adhere to common usage{{footnote}}The etymology of "display" would be great to use instead of render, but the common usage of display makes it a poor fit{{/footnote}}, but there are only so many good words ¯\_(ツ)_/¯.
 
 
-**Event**: Data representing the actions of a user. Examples of events are mouse clicks, and key presses from a keyboard.
+**Event**: Data representing the actions of a user. Examples of events are mouse clicks and key presses from a keyboard.
 
 **Intent**: Data representing a user intent. Examples of user intents are "delete a todo list item", "open a document", "navigate to a URL".
 
@@ -116,7 +113,7 @@ The goal for membrane is to use these words more precisely (at least within the 
 
 **Draw**: To turn a view into pixels, typically through side effects that can be displayed directly.
 
-## Platform toolkit
+## Platform Toolkit
 
 To discuss some of the challenges in user interface programming, we have to talk about some of the components and systems underneath the UI frameworks we use directly. Informally, we'll be calling the environment that provides the event and graphics models the **platform toolkit**. Examples include the browser, Swing, JavaFX, and UIKit. Ideally, these toolkits would only provide a means to receive user events and a sane way to draw graphics. State management would be handled by a separate library or framework.
 
@@ -153,7 +150,7 @@ The impedance mismatch between functional code and the underlying OO based toolk
 
 ### Events
 
-It's hard to find examples that are easy to explain. The problems caused by having a baked in OO event model are usually pretty easy to workaround in small applications. It's when working on more complex application where the weight of incidental complexity starts to crush you.
+It's hard to find examples that are easy to explain. The problems caused by having a baked in OO event model are usually pretty easy to workaround in small applications. It's when working on a more complex application where the weight of incidental complexity starts to crush you.
 
 #### What happens?
 
@@ -203,7 +200,7 @@ The answers to these questions should be trivial, but they're not.
 
 If you're using react or any library built on top of react, then the options for inspecting or manipulating the render output of a component are limited to:
 * adding, removing, editing child elements
-* adding removing, editing html attributes
+* adding, removing, editing html attributes
 * editing the html tag name for an element
 
 That's it. In all fairness, these are the most important operations. It's possible to build user interfaces with just these operations and many developers have, but we can do better.

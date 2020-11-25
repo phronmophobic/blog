@@ -15,7 +15,7 @@ Neither is true and if we're going to face the current challenges in user interf
 
 This post actually says very little that's specific to membrane. The main goal of this post is to clearly define what a user interface is. It's really easy to skip this step, but it's crucial for understanding membrane's design. Everything in membrane is built on top of these concepts. If you're looking for actual code, stay tuned for future posts!
 
-Membrane is still a work in progress, so if you have feedback, you can file an issue for [this post](https://github.com/phronmophobic/blog/blob/master/markdown/what-is-a-user-interface.md), or on [membrane](https://github.com/phronmophobic/membrane/issues/new).
+Membrane is still a work in progress, so if you have feedback, you can post on [reddit](https://www.reddit.com/r/Clojure/comments/k0cuat/what_is_a_user_interface/), file an issue for [this post](https://github.com/phronmophobic/blog/blob/master/markdown/what-is-a-user-interface.md), or file an issue on [membrane](https://github.com/phronmophobic/membrane/issues/new).
 
 ## Questions
 
@@ -184,7 +184,7 @@ It would be really straightforward for the re-frame library to solve this issue 
 
 Displaying program state is a one of the main responsibilities of a user interface. Unfortunately, the graphical building blocks from platform toolkits don't match the building blocks used by designers. You're not going to find a `<div/>` tool in Photoshop or Illustrator. The browser has reasonable support for text and images, but many of the the common elements a designer would use either don't exist or are awkward to implement.
 
-Not only is there a mismatch between the graphical elements used by designers and programmers, it's very common for UI code to use graphical elements that inextricably couple state and events. As an example, consider a checkbox. Is it possible to draw just the checkbox without any of the associated behavior? Are the graphical elements that produce the checkbox able to be extracted and inspected? As with just about every other simple task on the web, the answer is probably "sorta" with a dozen Stack Overflow posts explaining a handful of options that depend on various subtlety different circumstances. This is not a great place to be.
+Not only is there a mismatch between the graphical elements used by designers and programmers, it's very common for UI code to use graphical elements that inextricably couple state and events. As an example, consider a checkbox. Is it possible to draw just the checkbox without any of the associated behavior? Are the graphical elements that produce the checkbox able to be extracted and inspected? As with just about every other simple task on the web, the answer is probably "sorta" with a dozen Stack Overflow posts explaining a handful of options that depend on various subtly different circumstances. This is not a great place to be.
 
 The building blocks we're using to specify UI graphics are unnecessarily complicated. At the bottom, we have `<div/>`s, `<span/>`s, `<input/>`s , etc. and none of these can be broken down into simpler pieces. Even just measuring the size of a snippet of HTML requires a ton of global environmental information. When we use complex, stateful constructs at the bottom, it hinders our ability to generically process and manipulate user interfaces. Consequently, tooling and testing for user interfaces suffers.
 

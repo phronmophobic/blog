@@ -1,5 +1,11 @@
 (ns blog.mdown
   (:require [clojure.zip :as z]
+            [membrane.ui :as ui]
+            [membrane.skia :as skia]
+            [glow.core :as glow]
+            glow.parse
+            glow.html
+            [glow.colorschemes]
             [hiccup.core :refer [html]
              :as hiccup])
   (:import com.vladsch.flexmark.util.ast.Node
@@ -254,9 +260,21 @@
 (extend-type com.vladsch.flexmark.ast.FencedCodeBlock
   IBlogHtml
   (blog-html [this]
-    [:pre
-     [:code
-      (map blog-html (children this))]]))
+
+
+    (case (.getInfo this)
+
+      "clojure"
+      (let [source (clojure.string/join (map #(.getChars %) (children this)))]
+        (glow/highlight-html source))
+
+      ;; else
+      [:pre
+       [:code
+        (map blog-html (children this))]]
+      )
+
+    ))
 
 
 (extend-type com.vladsch.flexmark.ast.Code
@@ -420,7 +438,31 @@
       [:link {:href (str asset-prefix "bootstrap.min.css")
               :rel "stylesheet"}]
       [:link {:href (str asset-prefix "blog.css")
-              :rel "stylesheet"}]]
+              :rel "stylesheet"}]
+      [:style {:type "text/css"}
+       (glow/generate-css
+        {:exception "#f00"
+         :repeat  "#f00"
+         :conditional "#30a"
+         :variable "black"
+         :core-fn "#30a"
+         :definition "#00f"
+         :reader-char "#555"
+         :special-form "#30a"
+         :macro "#05a"
+         :number "#164"
+         :boolean "#164"
+         :nil "#164"
+         :s-exp "#997"
+         :keyword "#708"
+         :comment "#a50"
+         :string "#a11"
+         :character "#f50"
+         :regex "#f50"}
+        )
+       " div.syntax { padding: 4px ; background-color: #f8f8f8; margin-bottom: 18px }"
+       " div.syntax pre { margin-bottom: 0 }"]
+]
 
      [:body
 

@@ -7,6 +7,7 @@
                  [org.clojure/clojurescript "1.10.764"]
                  [com.phronemophobic/membrane "0.9.12-beta-SNAPSHOT"]
                  [com.phronemophobic/treemap-clj "0.2.0"]
+                 [venantius/glow "0.1.6"]
                  [com.vladsch.flexmark/flexmark-all "0.62.2"]
                  [hiccup "1.0.5"]]
   :main ^:skip-aot blog.core

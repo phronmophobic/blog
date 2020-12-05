@@ -529,6 +529,18 @@
    :src "markdown/what-is-a-user-interface.md"
    :out "resources/public/what-is-a-user-interface.html"})
 
+(defpost ui-model
+  {:id :ui-model
+   :title "UI Model"
+   :subheading "How to build a functional UI library from scratch: Part II"
+   :nav [:div {:class "container"}
+         [:nav.nav.blog-nav
+          [:a.nav-link
+           "&nbsp;"]]]
+   :asset-prefix "ui-model/"
+   :src "markdown/ui-model.md"
+   :out "resources/public/ui-model.html"})
+
 (defpost html-tax-post
   {:id :html-tax
    :title "The HTML Tax"

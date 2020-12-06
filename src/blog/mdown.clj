@@ -531,7 +531,7 @@
 
 (defpost ui-model
   {:id :ui-model
-   :title "UI Model"
+   :title "Implementing a Functional UI Model"
    :subheading "How to build a functional UI library from scratch: Part II"
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav

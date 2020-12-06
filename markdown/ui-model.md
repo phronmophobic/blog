@@ -8,7 +8,7 @@ Previously, on **How to build a functional UI library from scratch**. We defined
 
 <!-- Many of the implementation ideas should be familiar to anyone with functional programming experience. -->
 
-In this post, we'll get into the nitty gritty of how some of the concepts outlined in the previous post are implemented. Many of the illustrative examples will be internal "implementation details" of membrane (which is a little bit like showing off your underwear). There are a few reasons for being a little risqué:
+In this post, we'll get into the nitty gritty of how the concepts outlined in the previous post are implemented. Many of the illustrative examples will be internal "implementation details" of membrane (which is a little bit like showing off your underwear). There are a few reasons for being a little risqué:
 * There are too many libraries building on top of React and not enough libraries working to fix the problems "under" React.
 * When working on membrane, it was difficult to find good references covering the designs of platform toolkits. Trawling through code bases like Chromium, GTK, QT, Swing, AWT, etc. for insights is arduous.
 * Building a library like membrane currently requires implementing a large surface area. Building user interfaces requires integrations with graphics libraries, platform toolkits, event handling, text rendering, and state management. There are high quality, functional options for state management, but most of these libraries are strongly coupled to a particular platform toolkit.{{footnote}} I've tried to extract some, but it's much more difficult than you might expect.{{/footnote}} Some design decisions in membrane were made thoughtfully and some design decisions were made to expedite the goal of having a fully working system where new ideas can be tested. Hopefully this post can provide some context for future library authors building "underneath" React.
@@ -95,9 +95,9 @@ As we try to get back to functional programming land, let's begin by taking a de
   (glfw-call Void/TYPE glfwSwapBuffers window))
 ```
 
-All of this looks icky, but don't worry. We're almost ready to return to the safe haven of pure functions and data. The main reason to show these snippets is to demystify what's going on under the hood UI frameworks{{footnote}}Is it working?{{/footnote}}. Most of the code is just boilerplate. Really, the main bit is this snippet:
+All of this looks icky, but don't worry. We're almost ready to return to the safe haven of pure functions and data. The main reason to show these snippets is to demystify what's going on under the hood of UI frameworks{{footnote}}Is it working?{{/footnote}}. Most of the code is just boilerplate. Really, the main bit is this snippet:
 
-```
+```clojure
 (let [view (reset! ui (view-fn))]
   (draw view))
 ```
@@ -119,7 +119,7 @@ To get started, all we need is data that describes what to draw. We'll need a wa
 - grouping
 - 2D transforms
 
-Membrane uses records. Below are some abbreviated definitions that membrane uses.{{footnote}} The actual definitions are only slightly more verbose<https://github.com/phronmophobic/membrane/blob/master/src/membrane/ui.cljc>{{/footnote}}
+Membrane uses records. Below are some abbreviated definitions that membrane uses.{{footnote}} The actual definitions are only slightly more verbose <https://github.com/phronmophobic/membrane/blob/master/src/membrane/ui.cljc>{{/footnote}}
 
 ```clojure
 (defrecord Label [text font])
@@ -132,10 +132,10 @@ Membrane uses records. Below are some abbreviated definitions that membrane uses
 
 Now that we have a few items we can draw, we need a way to compose them together. Clojure already has a data structure for grouping, vectors. A vector specifies a group of elements that should be drawn in order. Currently, sequences and maps have undefined meaning in our graphics model and are reserved for future specification. It's likely that sequences will have the same meaning as vectors.
 
-It's still not clear what the optimal data model design is, but fortunately, it's pretty easy to beat `<div/>`s and `<span/>`s in terms of usability. Designing a better model is a promising area for improvement in the future. Clojure's data abstractions make it easy to provide an open model. If a newer, better model is available, it can be added without making breaking changes as long as the new model implements all of the relevant protocols.
+It's still not clear what the optimal graphics data model is, but fortunately, it's pretty easy to beat `<div/>`s and `<span/>`s in terms of usability. Designing a better model is a promising area for improvement in the future. Clojure's data abstractions make it easy to provide an open model. If a newer, better model is available, it can be added without making breaking changes as long as the new model implements all of the relevant protocols.
 <!-- Key Concepts: data, data, data -->
 
-### Transforms
+## Transforms
 
 Everyone's favorite 2D transforms:
 
@@ -146,7 +146,7 @@ Everyone's favorite 2D transforms:
 (defrecord AffineTransform [matrix drawable])
 ```
 
-### Convenience wrappers
+## Convenience wrappers
 
 Instantiating the records directly is discouraged. Each record type has a wrapper function that should be used.
 
@@ -159,7 +159,7 @@ Examples:
                               (ui/label "Hello World!"))])]
 ```
 
-For more info, check out the [tutorial](https://github.com/phronmophobic/membrane/blob/master/docs/tutorial.md#graphics).
+For more details about the graphics model, check out the [graphics tutorial](https://github.com/phronmophobic/membrane/blob/master/docs/tutorial.md#graphics).
 
 
 ## Hello World
@@ -182,8 +182,8 @@ Here's the hello world code:
 ;; other example backends
 ;; (require '[membrane.lanterna :as backend]) ;; terminal
 ;; (require '[membrane.java2d :as backend]) ;; Swing
-;; (require '[membrane.vdom :as backend])
-;; (require '[membrane.webgl :as backend])
+;; (require '[membrane.vdom :as backend]) ;; Web divs
+;; (require '[membrane.webgl :as backend]) ;; Web openGL
 
 
 
@@ -201,7 +201,7 @@ Here's the hello world code:
 
 ## Generic Manipulation
 
-The key idea is that graphical elements are values. They can be manipulated and inspected on any thread without synchronization. Views are semantically transparent which facilitates serialization, network transmission, storage, and implementation in multiple languages and platforms.
+The main idea is that graphical elements are values. They can be manipulated and inspected on any thread without synchronization. Views are semantically transparent which facilitates serialization, network transmission, storage, and implementation in multiple languages and platforms.
 
 To support generic manipulation, membrane provides the following functions for inspecting any view:
 
@@ -229,8 +229,7 @@ Coordinates are represented as a vector of two numbers `[x, y]`.
 
 ## Positioning and Layout
 
-Views are just data. When, where, and how to layout views can be decided 
-independently. 
+Views are just data. When, where, and how to layout views can be decided independently. 
 
 Do you want to...
 * use an [incremental constraint solver](https://constraints.cs.washington.edu/cassowary/) like iOS? 
@@ -277,7 +276,7 @@ Many platform toolkits smush together what to draw with how to draw it. Separati
 
 # Events
 
-The first point is that the event model is pluggable. If the event model doesn't suit the use case, it can be swapped independently of other parts. Further, membrane's default event model isn't monolithic, so it's possible to reuse parts of the event model to construct a new event model if a small tweak is needed. Most applications will use the default event model "as is", but the flexibility to replace or augment the event model for development, testing, performance, or tooling is a nice bonus. Creating an alternate event model is beyond the scope of this post. We'll simply refer to the default event model as the event model for the rest of this post.
+In membrane, the event model is pluggable. If the event model doesn't suit the use case, it can be swapped independently of other parts. Further, membrane's default event model isn't monolithic, so it's possible to reuse parts of the event model to construct a new event model if a small tweak is needed. Most applications will use the default event model "as is", but the flexibility to replace or augment the event model for development, testing, performance, or tooling is a nice bonus. Creating an alternate event model is beyond the scope of this post. We'll simply refer to the default event model as the event model for the rest of this post.
 
 **Event Function** - a pure function which receives the application state and an event and returns data specifying the user's intent (eg. add a new todo item to the todo list). This facilitates communication from the user to the application.
 
@@ -335,7 +334,7 @@ It might not be apparent why having pure event functions is a big deal. For comp
 On the surface, this appears pretty similar, but architecturally, it's very different. The event handler has a side effect. Further, the dispatch function itself is hooked into global state. Essentially, we've just tangled together parts of our application that should be decoupled. To be clear, this isn't `re-frame`'s fault{{footnote}}`re-frame` is great. It's a really practical library and the community around it is helpful and friendly.{{/footnote}}. It's a limitation imposed by an OO event model addicted to side effects.
 
 > Computer science offers a standard way to handle complexity:hierarchical structure.
-> {{blockquote-footer}}Leslie Lamport {{footnote}}[How to Write a 21stCentury Proof](https://lamport.azurewebsites.net/pubs/proof.pdf){{/footnote}}{{/blockquote-footer}}
+> {{blockquote-footer}}Leslie Lamport {{footnote}}[How to Write a 21st Century Proof](https://lamport.azurewebsites.net/pubs/proof.pdf){{/footnote}}{{/blockquote-footer}}
 
 As described in the previous post, the biggest issue with OO event systems is that they are primarily or exclusively side effect driven. Side effects ruin composition. In membrane, event handlers are pure functions that take the event data as arguments and return the intents of the user. In this regard, event handlers are more akin to ring's middleware or re-frame's interceptors.
 
@@ -376,7 +375,10 @@ Since we're not ignoring the return value, we have some powerful functional tool
 ;; => nil
 ```
 
-In fact, it's possible to completely silence all event handlers for a child component by simply wrapping the component with `membrane.ui/no-events` (eg. `(membrane.ui/no-events child-elem)` ).
+In fact, it's possible to completely silence all event handlers for a child component by simply wrapping the component with `membrane.ui/no-events`.
+```clojure
+(membrane.ui/no-events child-elem)
+```
 
 <!-- ## RTree -->
 
@@ -397,7 +399,7 @@ Some examples of `wrap-on`:
                                my]))
  child-elem)
 
-;; remove all ::delete intents returned from the child component
+;; remove all ::delete intents returned from the child view
 (ui/wrap-on
  :mouse-down (fn [child-handler [mx my]]
                (let [child-intents (child-handler [(+ 10 mx)
@@ -405,7 +407,7 @@ Some examples of `wrap-on`:
                  (remove #(= ::delete (first %)) child-intents)))
  child-elem)
 
-;; Use all child intents and also do some extra stuff
+;; Return all child intents and append some additional intents
 (ui/wrap-on
  :mouse-down (fn [child-handler [mx my]]
                (let [child-intents (child-handler [(+ 10 mx)
@@ -463,9 +465,9 @@ It may not be completely obvious why functional bubbling is important, but it's 
 > Often, several components need to reflect the same changing data.
 > {{blockquote-footer}}React docs: [Lifting State Up](https://reactjs.org/docs/lifting-state-up.html){{/blockquote-footer}}
 
-For a component to be reusable, it often needs to operate on nested state. Which subset of state can't be known ahead of time and multiple instances may be operating on completely different state or on shared state. The recommended solution proposed by most libraries is to _rewrite_ your component so you can [lift state up](https://reactjs.org/docs/lifting-state-up.html). Membrane contends that components should be reusable by default. Rather than adding callbacks to delegate event handling, membrane advocates leveraging functional bubbling.
+For a component to be reusable, it often needs to operate on nested state. Which subset of state can't be known ahead of time and multiple instances of a component may be operating on completely different state or on shared state. The recommended solution proposed by most libraries is to _rewrite_ your component so you can [lift state up](https://reactjs.org/docs/lifting-state-up.html). Membrane contends that components should be reusable by default. Rather than adding callbacks to delegate event handling, membrane advocates leveraging functional bubbling.
 
-We'll use the the same temperature converter example from the react tutorial. The basis idea is to create temperature converter widget. In membrane, that might look something like:
+We'll use the the same temperature converter example from the react tutorial. The basic idea is to create temperature converter widget. In membrane, that might look something like:
 
 ```clojure
 (defn temperature-input [temperature scale]
@@ -498,7 +500,7 @@ We're skipping the state management part of this example for now, but we'll give
 
 ## Events in the event loop
 
-Similar to how we were able to separate the control part of the event loop from the purely functional `view-fn`, we can separate the out the event functions from the control flow of the event loop. From our event loop, let's zoom in on the `wait-events` function:
+Similar to how we were able to separate the control part of the event loop from the purely functional `view-fn`, we can separate the event functions from the control flow of the event loop. From our event loop, let's zoom in on the `wait-events` function:
 
 ```clojure
 (defn wait-events []
@@ -510,7 +512,7 @@ It's just a call to `glfwWaitEventsTimeout`{{footnote}}Other are options are `gl
 > **glfwWaitEventsTimeout**: It puts the thread to sleep until at least one event has been received, or until the specified number of seconds have elapsed. It then processes any received events.
 > {{blockquote-footer}}GLFW [Input Guide](https://www.glfw.org/docs/latest/input_guide.html){{blockquote-footer}}
 
-Processing events works by calling callbacks that were set up during initialization(not shown in the above examples). Callbacks are then run in the event loop when `glfwWaitEventsTimeout` is called. Below is one of the callbacks. The other callbacks follow a similar pattern (some of the callbacks are a little messier because they need to standardize events to match other backends).
+Processing events works by invoking callbacks that were set up during initialization(not shown in the above examples). Callbacks are then run in the event loop when `glfwWaitEventsTimeout` is called. Below is one of the callbacks. The other callbacks follow a similar pattern (some of the callbacks are a little messier because they need to standardize events to match other backends).
 
 ```clojure
 (defn- -mouse-button-callback [window window-handle button action mods]
@@ -540,7 +542,7 @@ The UI model provided by membrane is platform agnostic. It doesn't say anything 
 
 ## Performance
 
-Performance is an important feature for any user interface. User interfaces that feel responsive are better. While many low hanging optimizations have been implemented, achieving the fastest benchmarks is not currently a priority. Membrane is still in the design phase and the highest priority is to optimize the design. Performance considerations will influence design decisions. While membrane is still in the design phase, bottlenecks will be addressed as necessary. If you experience performance issue, please file a [github issue](https://github.com/phronmophobic/membrane/issues/new).
+Performance is an important feature for any user interface. User interfaces that feel responsive are better. While many low hanging optimizations have been implemented, achieving the fastest benchmarks is not currently a priority. Membrane is still in the design phase and the highest priority is to optimize the design. Performance considerations will influence design decisions. While membrane is still in the design phase, bottlenecks will be addressed as necessary. If you experience a performance issue, please file a [github issue](https://github.com/phronmophobic/membrane/issues/new).
 
 Having said that, one of the surprises of working on membrane is how responsive the resulting UIs feel. One of the main points of comparison is the web browser and it turns out the web browser spends a bunch of time monkeying around.
 

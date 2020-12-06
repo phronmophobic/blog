@@ -18,7 +18,7 @@ In this post, we'll get into the nitty gritty of how some of the concepts outlin
 > As we make things simpler, we get more independence of decisions because they're not interleaved
 > {{blockquote-footer}}[Rich Hickey](https://github.com/matthiasn/talk-transcripts/blob/master/Hickey_Rich/SimpleMadeEasy.md){{/blockquote-footer}}
 
-One of the promises of building systems using simpler constructs is flexibility. Unfortunately, having more decision points can make the day to day development of software harder. To combat analysis paralysis, membrane follows "make the common case easy and the complex case possible".{{footnote}}Derived from Larry Wall's "make the easy things easy, and the hard things possible"{{/footnote}} {{footnote}}Hopefully, this isn't too disappointing for the masochistisic web developer that's used to "make the common case complex, and the complex case janky".{{/footnote}} In practice, that means uising simple constructs (make the complex case possible) and have tools, recipes, documentation and frameworks that package best practices for common tasks (make the common case easy). In this post, we'll be focusing on the simple constructs themselves, so it may not be clear how everything fits together until future posts. <!-- , which we'll start to cover in the next post. -->
+One of the promises of building systems using simpler constructs is flexibility. Unfortunately, having more decision points can make the day to day development of software harder. To combat analysis paralysis, membrane follows "make the common case easy and the complex case possible".{{footnote}}Derived from Larry Wall's "make the easy things easy, and the hard things possible"{{/footnote}} {{footnote}}Hopefully, this isn't too disappointing for the masochistic web developer that's used to "make the common case complex, and the complex case janky".{{/footnote}} In practice, that means using simple constructs (make the complex case possible) and have tools, recipes, documentation and frameworks that package best practices for common tasks (make the common case easy). In this post, we'll be focusing on the simple constructs themselves, so it may not be clear how everything fits together until future posts. <!-- , which we'll start to cover in the next post. -->
 
 
 
@@ -68,7 +68,7 @@ The basic elements of this event loop are:
 - if there's more to do, loop
 - clean up
 
-Many event loops will follow a similar pattern. Most ui frameworks have _the_ event loop which is hidden deep within the belly of the beast. <!-- It's easy to forget that it's even there. Since most UI libraries are monolithic, it's wouldn't be feasible to provide your own event loop anyway.  -->As mentioned before, one of the promises of simplicity is flexibility. In membrane, when the platform toolkit allows, the decision of which event loop to use can be made independently of other architectural decisions. Most developers will use the good-enough default, but there will still be the option to use or create an alternative event loop should the use case demand it.
+Many event loops will follow a similar pattern. Most UI frameworks have _the_ event loop which is hidden deep within the belly of the beast. <!-- It's easy to forget that it's even there. Since most UI libraries are monolithic, it's wouldn't be feasible to provide your own event loop anyway.  -->As mentioned before, one of the promises of simplicity is flexibility. In membrane, when the platform toolkit allows, the decision of which event loop to use can be made independently of other architectural decisions. Most developers will use the good-enough default, but there will still be the option to use or create an alternative event loop should the use case demand it.
 
 Some requirements for the event loop are imposed by operating systems and platforms. Some requirements are dictated by the application. For example, it may be useful to have a different event loop for development and testing purposes. Allowing event loops to be swapped out is an opportunity for frameworks to provide good options for specific use cases (eg. games, editors, document viewers, etc). For complex applications, it's common to use whatever hooks are available (eg. `setTimeout`, `requestAnimationFrame`) to try to suitably customize the event loop, but adding a bunch of hooks usually leads to an [inner platform effect](https://en.wikipedia.org/wiki/Inner-platform_effect).
 
@@ -164,7 +164,7 @@ For more info, check out the [tutorial](https://github.com/phronmophobic/membran
 
 ## Hello World
 
-Now that we have a way to describe what to draw, we can now write the Hello World program with membrane. There are several options available in membrane for running a user interace. To "run" a user interface, you need some way to hook into the graphics and events provided by a platform toolkit. The platform toolkit hooks are called **graphics backends** in membrane. A graphics backend typically exposes a `run` function:
+Now that we have a way to describe what to draw, we can now write the Hello World program with membrane. There are several options available in membrane for running a user interface. To "run" a user interface, you need some way to hook into the graphics and events provided by a platform toolkit. The platform toolkit hooks are called **graphics backends** in membrane. A graphics backend typically exposes a `run` function:
 
 ```clojure
 (run view-fn)
@@ -201,7 +201,7 @@ Here's the hello world code:
 
 ## Generic Manipulation
 
-The key idea is that graphical elements are values. They can be maniplated and inspected on any thread without synchronization. Views are semantically transparent which facilitates serialization, network transmission, storage, and implementation in multiple languages and platforms.
+The key idea is that graphical elements are values. They can be manipulated and inspected on any thread without synchronization. Views are semantically transparent which facilitates serialization, network transmission, storage, and implementation in multiple languages and platforms.
 
 To support generic manipulation, membrane provides the following functions for inspecting any view:
 
@@ -463,7 +463,7 @@ It may not be completely obvious why functional bubbling is important, but it's 
 > Often, several components need to reflect the same changing data.
 > {{blockquote-footer}}React docs: [Lifting State Up](https://reactjs.org/docs/lifting-state-up.html){{/blockquote-footer}}
 
-For a component to be reusable, it often needs to operate on nested state. Which subset of state can't be known ahead of time and multiple instances may be operating on completely different state or on shared state. The recommended solution proprosed by most libraries is to _rewrite_ your component so you can [lift state up](https://reactjs.org/docs/lifting-state-up.html). Membrane contends that components should be reusable by default. Rather than adding callbacks to delegate event handling, membrane advocates leveraging functional bubbling.
+For a component to be reusable, it often needs to operate on nested state. Which subset of state can't be known ahead of time and multiple instances may be operating on completely different state or on shared state. The recommended solution proposed by most libraries is to _rewrite_ your component so you can [lift state up](https://reactjs.org/docs/lifting-state-up.html). Membrane contends that components should be reusable by default. Rather than adding callbacks to delegate event handling, membrane advocates leveraging functional bubbling.
 
 We'll use the the same temperature converter example from the react tutorial. The basis idea is to create temperature converter widget. In membrane, that might look something like:
 
@@ -510,7 +510,7 @@ It's just a call to `glfwWaitEventsTimeout`{{footnote}}Other are options are `gl
 > **glfwWaitEventsTimeout**: It puts the thread to sleep until at least one event has been received, or until the specified number of seconds have elapsed. It then processes any received events.
 > {{blockquote-footer}}GLFW [Input Guide](https://www.glfw.org/docs/latest/input_guide.html){{blockquote-footer}}
 
-Processing events works by calling callbacks that were set up during initialization(not shown in the above examples). Callbacks are then run in the event loop when `glfwWaitEventTimeout` is called. Below is one of the callbacks. The other callbacks follow a similar pattern (some of the callbacks are a little messier because they need to standardize events to match other backends).
+Processing events works by calling callbacks that were set up during initialization(not shown in the above examples). Callbacks are then run in the event loop when `glfwWaitEventsTimeout` is called. Below is one of the callbacks. The other callbacks follow a similar pattern (some of the callbacks are a little messier because they need to standardize events to match other backends).
 
 ```clojure
 (defn- -mouse-button-callback [window window-handle button action mods]
@@ -526,7 +526,7 @@ Processing events works by calling callbacks that were set up during initializat
   (repaint! window))
 ```
 
-Look! It's one the event functions, `mouse-event`! Similar to the `view-fn`, `mouse-event` doesn't explicity get passed state. At this point, it's assumed that any state has been closed over. The event loop doesn't and shouldn't care about how state is handled. It only needs to know what to draw and who to tell about new input events.
+Look! It's one the event functions, `mouse-event`! Similar to the `view-fn`, `mouse-event` doesn't explicitly get passed state. At this point, it's assumed that any state has been closed over. The event loop doesn't and shouldn't care about how state is handled. It only needs to know what to draw and who to tell about new input events.
 
 # Conclusion
 
@@ -540,7 +540,7 @@ The UI model provided by membrane is platform agnostic. It doesn't say anything 
 
 ## Performance
 
-Performance is an important feature for any user interface. User interfaces that feel responsive are better. While many low hanging optimizations have been implemented, achieving the fastest benchmarks is not currently a priority. Membrane is still in the design phase and the highest priority is to optimize the design. Performance considerations will influence design decisions. While membrane is still in the design phase, bottlenecks will be adddressed as necessary. If you experience performance issue, please file a [github issue](https://github.com/phronmophobic/membrane/issues/new).
+Performance is an important feature for any user interface. User interfaces that feel responsive are better. While many low hanging optimizations have been implemented, achieving the fastest benchmarks is not currently a priority. Membrane is still in the design phase and the highest priority is to optimize the design. Performance considerations will influence design decisions. While membrane is still in the design phase, bottlenecks will be addressed as necessary. If you experience performance issue, please file a [github issue](https://github.com/phronmophobic/membrane/issues/new).
 
 Having said that, one of the surprises of working on membrane is how responsive the resulting UIs feel. One of the main points of comparison is the web browser and it turns out the web browser spends a bunch of time monkeying around.
 

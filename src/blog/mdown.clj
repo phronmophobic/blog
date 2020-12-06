@@ -95,7 +95,7 @@
 
 (defmethod macroexpand1-doc "footnotes" [macro]
   (hiccup-node
-   [:div
+   [:div.footnotes
     (for [[i footnote] (map-indexed vector (get-footnotes))
           :let [idx (inc i)]]
       [:div

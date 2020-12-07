@@ -146,7 +146,7 @@ Everyone's favorite 2D transforms:
 (defrecord AffineTransform [matrix drawable])
 ```
 
-## Convenience wrappers
+## Convenience Wrappers
 
 Instantiating the records directly is discouraged. Each record type has a wrapper function that should be used.
 

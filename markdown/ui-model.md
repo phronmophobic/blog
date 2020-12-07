@@ -498,7 +498,7 @@ When the textarea changes, the event handler would return a `[::change-temperatu
 
 We're skipping the state management part of this example for now, but we'll give it the full treatment in the next post!
 
-## Events in the event loop
+## Events in the Event Loop
 
 Similar to how we were able to separate the control part of the event loop from the purely functional `view-fn`, we can separate the event functions from the control flow of the event loop. From our event loop, let's zoom in on the `wait-events` function:
 

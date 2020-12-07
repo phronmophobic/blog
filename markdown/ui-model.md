@@ -197,7 +197,11 @@ Here's the hello world code:
 
 ```
 
+Creating a new backend is beyond the scope of this post, but making a minimal graphics backend only requires:
 
+1. An event loop
+2. A few draw implementations (like shapes, images, and text)
+2. A way to hook up input events (like mouse clicks, movement, and key presses, etc.)
 
 ## Generic Manipulation
 

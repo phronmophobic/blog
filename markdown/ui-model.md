@@ -4,7 +4,7 @@ _This post is the second in a series of posts explaining the design principles b
 
 # Introduction
 
-Previously, on **How to build a functional UI library from scratch**. We defined a fully functional user interface as the combination of two pure functions, the event function and the view function. Next, we'll take a closer look at views, events, and how they are implemented in membrane. 
+[Previously](what-is-a-user-interface.html), on **How to build a functional UI library from scratch**. We defined a fully functional user interface as the combination of two pure functions, the event function and the view function. Next, we'll take a closer look at views, events, and how they are implemented in membrane. 
 
 <!-- Many of the implementation ideas should be familiar to anyone with functional programming experience. -->
 

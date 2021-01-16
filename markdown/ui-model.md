@@ -2,6 +2,10 @@
 
 _This post is the second in a series of posts explaining the design principles behind [membrane](https://github.com/phronmophobic/membrane), a cross platform library for building fully functional user interfaces in clojure(script)._
 
+
+
+Feedback is appreciated. Discuss on [reddit](https://www.reddit.com/r/Clojure/comments/kb8mbp/implementing_a_functional_ui_model/) or file an issue on [membrane's](https://github.com/phronmophobic/membrane/issues/new) github repo.
+
 # Introduction
 
 [Previously](what-is-a-user-interface.html), on **How to build a functional UI library from scratch**. We defined a fully functional user interface as the combination of two pure functions, the event function and the view function. Next, we'll take a closer look at views, events, and how they are implemented in membrane. 
@@ -148,7 +152,7 @@ Everyone's favorite 2D transforms:
 
 ## Convenience Wrappers
 
-Instantiating the records directly is discouraged. Each record type has a wrapper function that should be used.
+Instantiating records directly is discouraged. Each record type has a wrapper function that should be used.
 
 Examples:
 ```clojure
@@ -469,7 +473,7 @@ It may not be completely obvious why functional bubbling is important, but it's 
 > Often, several components need to reflect the same changing data.
 > {{blockquote-footer}}React docs: [Lifting State Up](https://reactjs.org/docs/lifting-state-up.html){{/blockquote-footer}}
 
-For a component to be reusable, it often needs to operate on nested state. Which subset of state can't be known ahead of time and multiple instances of a component may be operating on completely different state or on shared state. The recommended solution proposed by most libraries is to _rewrite_ your component so you can [lift state up](https://reactjs.org/docs/lifting-state-up.html). Membrane contends that components should be reusable by default. Rather than adding callbacks to delegate event handling, membrane advocates leveraging functional bubbling.
+For a component to be reusable, it often needs to operate on nested state. Which subset of state can't be known ahead of time and multiple instances of a component may be operating on completely different state or on shared state. The recommended solution proposed by most libraries is to _rewrite_ your component so you can [lift state up](https://reactjs.org/docs/lifting-state-up.html). Membrane contends that components should be reusable by default. Rather than rewriting components to delegate event handling, membrane advocates leveraging functional bubbling.
 
 We'll use the the same temperature converter example from the react tutorial. The basic idea is to create temperature converter widget. In membrane, that might look something like:
 
@@ -477,7 +481,7 @@ We'll use the the same temperature converter example from the react tutorial. Th
 (defn temperature-input [temperature scale]
   (ui/vertical-layout
    (ui/label "Enter temperature in " (get scale-names scale))
-   (textarea :value scale
+   (textarea :value temperature
              :on-change (fn [val]
                           [[::change-temperature (parse-temp val)]]))))
 ```

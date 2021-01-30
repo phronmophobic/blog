@@ -5,7 +5,7 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [org.clojure/clojurescript "1.10.764"]
-                 [com.phronemophobic/membrane "0.9.16-beta-SNAPSHOT"]
+                 [com.phronemophobic/membrane "0.9.21-beta-SNAPSHOT"]
                  [com.phronemophobic/treemap-clj "0.2.0"]
                  [venantius/glow "0.1.6"]
                  [com.vladsch.flexmark/flexmark-all "0.62.2"]

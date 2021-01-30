@@ -1,26 +1,33 @@
 {{table-of-contents/}}
 
+_This post is the third  in a series of posts explaining the design principles behind [membrane](https://github.com/phronmophobic/membrane), a cross platform library for building fully functional user interfaces in clojure(script)._
+
+Previous posts: [What is a User Interface?](what-is-a-user-interface.html), [Implementing a Functional UI Model](ui-model.html)
+
+
+<!-- Feedback is appreciated. Discuss on [reddit](https://www.reddit.com/r/Clojure/comments/kb8mbp/implementing_a_functional_ui_model/) or file an issue on [membrane's](https://github.com/phronmophobic/membrane/issues/new) github repo. -->
+
 # Introduction
 
 UI components in many frameworks couple state management and event handling. If we can untangle these two responsibilities, then we can make our components easier to test, reuse, debug, and reason about. Further, having simpler UI components will enable us to build improved tooling, which we'll cover in the next post.
 
-Our strategy remains familiar. We'll try to build our UI components using only data and pure functions. If we can build our components out of data and pure functions, then we have a pretty good shot at achieving our goals. We've already shown in Part I and Part II that the view and event functions can be pure, but the missing piece is how should "stateful" components be implemented.
+Our strategy remains familiar. We'll try to build our UI components using only data and pure functions. We've already shown in [Part I](what-is-a-user-interface.html) and [Part II](ui-model.html) that the view and event functions can be pure. The missing piece is a plan for implementing "stateful" components.
 
 # The Big Idea
 
 
 In this post, we'll:
-* Define what a UI component is
+* Define what we mean by "UI component"
 * Propose design constraints for building UI components and explain their reasoning
 
-The summary of the design constraints covered is:
+The summary of the design constraints is:
 
 1. No side effects in view or event functions
 2. Receive data only through function arguments
     * corollary: No hidden/local state and don't use global state
-3. Use references (immutable data) in the event handler to return intents that need to refer to input state or parts thereof.
+3. Use references (represented with immutable data) in event handlers to return intents that need to refer to input state or parts thereof.
 
-Hopefully, everyone one of these points seems obvious, but violating some or all of these principles is common in user interface code. Even worse, many of our frameworks offer little help.
+<!-- Hopefully, everyone one of these points seems obvious, but violating some or all of these principles is common in user interface code. Even worse, many of our frameworks offer little help. -->
 
 
 <!-- Just like `map`, `filter`, etc. were reimplemented for every context before transducers came around, we keep implementing UI components for every state management option. This isn't even a novel idea, <https://day8.github.io/re-frame/reusable-components/#implications>. -->
@@ -85,7 +92,7 @@ Below is a simple example of an effect handler that can process 2 types of inten
 ;; 1
 ```
 
-We've implemented an example effect handler just to give flavor of what an effect handler might look like. The example doesn't use any libraries or helper functions, but most applications would probably want to use a library to help create their effect handlers.
+We've implemented an example effect handler just to give a flavor of what an effect handler might look like. The example doesn't use any libraries or helper functions, but most applications will want to use a library to help create their effect handlers.
 
 State management libraries should provide a means to specify an effect handler. For our examples, we'll use this snippet to "install" our effect handler:
 
@@ -98,7 +105,7 @@ State management libraries should provide a means to specify an effect handler. 
 
 # UI State
 
-Now that we have a way to update state and execute side effects for our UI, we can now cover how to build "stateful" UI components. In reality, we'll still be using data and pure functions to build our UI components, but the code will in many ways look similar to stateful UI components from OO libraries and frameworks. However, we'll still have access to the benefits of functional code: flexibility, composition, reuse, testable, debuggable. 
+Now that we have a way to update state and execute side effects, we can move onto building "stateful" UI components. We'll still be using data and pure functions to build our UI components, but the code will generally look similar to UI components built with OO libraries and frameworks. However, we'll still have access to the benefits of functional code.
 
 We'll start with the minimal case, no state, and slowly incorporate different kinds of state needed to build a feature rich user interface.
 
@@ -108,7 +115,7 @@ This is the easiest case. We already know how to accomplish this. A view with no
 
 ## Implicit State
 
-For our first example, let's examine a simple component which shows a "More!" button and a counter. The "More!" button will increment the counter.
+For our first example, let's examine a simple component which shows a "More!" button and a counter. Clicking the "More!" button will increment the counter.
 
 _gif of counter here_
 
@@ -125,8 +132,9 @@ Notice that the mouse-down event handler returns the `[:inc-counter]` intent. We
 
 ```clojure
 ;; check to make sure
-;; :increment-counter intent is returned when
-;; a mouse down event occurs above the button
+;; :inc-counter intent is returned when
+;; a mouse down event within
+;; the More! button's bounds
 (ui/mouse-down (counter-ui 10)
                [0 0])
 ;; ([:inc-counter])
@@ -169,9 +177,9 @@ The `counter-ui` is explicitly being passed the count, `num`, which is the preci
 # References
 
 >  By identity I mean a stable logical entity associated with a series of different values over time.
-> https://clojure.org/about/state
+> {{blockquote-footer}}<https://clojure.org/about/state>{{/blockquote-footer}}
 
-Many, if not most of the intents produced by a user interface will need to refer to entities. As an example, a todo list app will probably have intents like:
+Many, if not most, of the intents produced by a user interface will need to refer to entities. As an example, a todo list app will probably have intents like:
 - Add a new todo to a todo list
 - Mark a todo as complete
 
@@ -188,11 +196,11 @@ What data constitutes a valid reference will depend on the data model. Designing
 
 While membrane doesn't prevent using stateful references, it also offers no builtin support for the stateful reference approach. If you're curious about how a stateful reference approach might look, check out [hoplon](https://github.com/hoplon/hoplon), [reagent](https://reagent-project.github.io/), or the classic, STM based [ant sim](https://gist.github.com/michiakig/1093917).
 
-Below are examples for how intents can reference entities within a data model using identifiers or nesting as means of references logical entities. Even within a single data model, identifiers and nesting can be mixed and matched.
+Below are examples of intents with identifer and nesting based references. Even within a single data model, identifiers and nesting can be mixed and matched.
 
 ## Identifier
 
-If the application has a data model where entities have unique identifiers, then simply using the entity's unique identifier as a reference will suffice. Using a todo app as an example and assuming that todo lists and todo items have unique `:id` keys for identifiers, we could use the identifiers as references within intents:
+If the application has a data model where entities have unique identifiers, then simply using the entity's unique identifier as a reference will suffice. Using a todo app as an example and assuming that todo lists and todo items have unique `:id` keys, we can use the identifiers as references within intents.
 
 Example:
 ``` clojure
@@ -203,11 +211,11 @@ Example:
 [:mark-todo-complete (:id todo)]
 ```
 
-As long as the effect handler has a way to lookup and modify entities by id, then using identifiers is straightforward.
+As long as the effect handler has a way to lookup and modify entities by id, then using identifiers as references is straightforward.
 
 ## Nesting
 
-A nested data model for a todo list app might look something like:
+A nested data representation for a todo list app might look something like:
 
 ```clojure
 {:todo-lists
@@ -227,10 +235,14 @@ For this type of data model, the nested location of the entity can be used as a 
 Example:
 ``` clojure
 ;; Intent for "Add a new todo to a specific list"
-[:add-todo '[:todo-lists (nth 0)] {:done false :description "fix bugs"}]
+[:add-todo '[(keypath :todo-lists) (nth 0)]
+           {:done false :description "fix bugs"}]
 
 ;; Intent for "Mark todo as complete"
-[:mark-todo-complete '[(keypath :todo-lists) (nth 1) (keypath :todos) (nth 0)]]
+[:mark-todo-complete '[(keypath :todo-lists)
+                       (nth 1)
+                       (keypath :todos)
+                       (nth 0)]]
 ```
 
 
@@ -312,9 +324,9 @@ References only make sense for data that derives from arguments to the component
 ;;                 (keypath :d)]])
 ```
 
-Currently, `defui` translates references to nested references, but the same syntax could be used with a data model that wants identifiers or stateful references. One benefit of using using nested references is that they can be automatically translated to identifiers if a schema is provided (_link to example_).
+Currently, `defui` translates references to nested references, but the same syntax could be used with a data model that wants identifiers or stateful references. One benefit of using using nested references is that they can be automatically translated to identifiers if a schema is provided.
 
-If desired, we can now extract the button as its own reusable component.
+We can now extract the button as its own reusable component.
 
 ```clojure
 (defui more-button [{:keys [num]}]
@@ -324,7 +336,7 @@ If desired, we can now extract the button as its own reusable component.
 
 ```
 
-Write `nested-view` using the extracted `more-button`. 
+Next, rewrite `nested-view` using the extracted `more-button`. 
 
 ```clojure
 (def nested-data {:a {:b {:c {:d 1}}}})
@@ -343,7 +355,7 @@ Write `nested-view` using the extracted `more-button`.
 ;;                 (keypath :d)]])
 ```
 
-Notice how we were easily able to extract `more-button` without changing the intents returned by `nested-view`. The component `more-button` doesn't care where or how its argument, `num`, is stored. As long as `more-button` is passed a number, it doesn't matter how its nested.
+Notice how we were easily able to extract `more-button` without changing the intents returned by `nested-view`. The component `more-button` doesn't care where or how its argument, `num`, is stored. As long as `more-button` is passed a number, it doesn't matter how it's nested.
 
 ```clojure
 (def other-nested-data {:foo {:bar {:baz 1}}})
@@ -365,7 +377,7 @@ Notice how we were easily able to extract `more-button` without changing the int
 
 Macros that introduce syntax are viewed with skepticism and they should be. It's easy to get carried away with macros and actually make the system more complex. 
 
-One major drawback that comes up with macros is that they often limit composability. Functions can be passed around, partially applied, and invoked programmatically and macros can't. Fortunately, this drawback doesn't apply to `defui` since its only purpose is to define a component. The component itself is just a pure function. The extra syntax is just sugar to reduce boilerplate and it's straightforward to replace a `defui` definition with either more verbose code or simply generate the same result programmatically.
+One major drawback of macros is that they often limit composability. Functions can be passed around, partially applied, and invoked programmatically and macros can't. Fortunately, this drawback doesn't apply to `defui` since its only purpose is to define a component. The component itself is just a pure function. The extra syntax is just sugar to reduce boilerplate and it's straightforward to replace a `defui` definition with either more verbose code or simply generate the same result programmatically.
 
 A user interface is inherently about communication between a user and a software application. Application data is passed to the UI to produce the view and the user manipulates input devices like the keyboard and mouse to interact with the application data. Being able to easily refer to the nested entities being displayed aligns naturally with the UI's goal of translating raw input events like clicks and key presses into user intents.
 
@@ -378,23 +390,22 @@ Below is the definition for a checkbox:
    :mouse-down
    (fn [_]
      [[::toggle $checked?]])
-   ;; ui/checkbox simply a function
-   ;; that returns a view of a checkbox
+   ;; ui/checkbox is just
+   ;; a view of a checkbox
    ;; with no event handling
    (ui/checkbox checked?)))
 ```
 
-Being able to reference the `checked?` value being passed in allows the checkbox definition to succinctly state the intent of the user when the checkbox is clicked. The intent, `[::toggle $checked?]`, is the most direct representation of the user's intent to toggle the checkbox's value.
+Being able to reference the `checked?` value being passed in allows the checkbox definition to succinctly state the intent of the user when the checkbox is clicked. The intent, `[::toggle $checked?]`, is the most direct representation of the user's intent to toggle the checkbox's value. 
 
 
-If you ever used Om, you may be familiar with cursors. They serve a similar role, but are as proxies. They also automatically track nested references, but since cursors are proxies, they suffer from several issues:
+
+To automatically substitute references, the `defui` macro traces derived values back to the component's arguments. Clojure programs almost exclusively interact with data using abstractions like `nth`, `get`, and keyword lookup. The result is that tracing how data is extracted and passed down can be automated effectively. Manual tracing is error prone and creates unnecessary coupling between UI components and unrelated parts of an application's data model. An alternate approach to macros is using a proxy value to track derived values. The [Om](https://github.com/omcljs/om) clojurescript library used the proxy approach. The disadvantages of the proxy approach are:
 * differences between the proxy and the underlying object
 * primitive types like numbers, strings, and booleans, can't be proxied
 * violates referential transparency
 
-A macro based approach circumvents these issues. The macro's only job is to reduce boilerplate by tracing your code and automatically producing references. Clojure programs almost exclusively interact with data using abstractions like `nth`, `get`, and keyword lookup. The result is that tracing how data is extracted and passed down can be automated effectively. Manual tracing is error prone and creates unnecessary coupling between UI components and unrelated parts of an application's data model.
-
-
+A macro based approach circumvents these issues. The macro's only job is to reduce boilerplate by tracing derived values and automatically producing references. 
 
 Now that our intents include references, we need our effect handlers to be able to work with those references.
 
@@ -408,7 +419,8 @@ A major trick in our fight against complexity is to build complex components fro
 To make it easier to write effect handlers, membrane provides `defeffect` which can be use like so:
 
 ```clojure
-;; provide an implementation for the ::fire-missiles intent
+;; provide an implementation for
+;; the ::fire-missiles intent
 (defeffect ::fire-missiles! [missile target]
   (fire-missile! missile target))
 ```
@@ -420,7 +432,7 @@ For the most part, it looks and behaves similar to a normal function definition.
              (fire-missile! missile target))]
   (swap! membrane.component/effects
          assoc
-         :blog.mdown/fire-missiles! effect-fire-missiles!)
+         :my.ns/fire-missiles! effect-fire-missiles!)
   fvar)
 ```
 
@@ -430,31 +442,33 @@ For the most part, it looks and behaves similar to a normal function definition.
 
 Since the effect handler is registered globally, fully qualified keywords are highly encouraged. The name of the function defined in the current namespace will be the same as the name of the intent with "effect-" prefixed to the name. The main reason for the prefix is that the effect handler (eg. `effect-fire-missiles!`) may want to rely on a similarly named function (eg. `fire-missiles!`) in the same namespace. The effect handler function defined in the local namespace won't generally be used directly, but it should have its own name so it can be tested/debugged/etc independently of the rest of the UI.
 
-The last difference between `defeffect` and `defn` is that an implicit argument, `dispatch!`, is prepended to its argument list. We want to allow effect handlers to define themselves in terms of other effect handlers, but we don't want to directly connect implementation of effect handlers. For example, in development we may want the effect handler for `::notify-user` to print to stdout while, in production, dispatching a `::notify-user` effect may send an email or text message. 
+The last difference between `defeffect` and `defn` is that an implicit argument, `dispatch!`, is prepended to its argument list. We want to allow effect handlers to define themselves in terms of other effect handlers, but we don't want to directly connect implementation of effect handlers. For example, in development we may want the effect handler for `::notify-user` to print to stdout. In production, dispatching a `::notify-user` effect may send an email or text message. 
 
-The default effect handler uses all of the globally defined effect handlers are used, but an alternate effect handler that augments, instruments, replaces, or removes effect handlers can be easily be produced and provided as the effect handler for a user interface.
+The default effect handler uses all of the globally defined effect handlers, but an alternate effect handler that augments, instruments, replaces, or removes effect handlers can be easily be produced and provided as the effect handler for a user interface.
 
 
 ### Processing Effects With References
 
 
 
-In addition to all of the globally defined effect handlers, the default effect handler also provides additional these additional handlers:
+In addition to all of the globally defined effect handlers, the default effect handler also provides these  handlers:
 * `[:get $ref]`
 * `[:set $ref val]`
 * `[:update $ref f & args]`
 * `[:delete $ref]`
 
-The `$ref`s are references. Below is the implementation for the `::toggle` effect used by our `checkbox` example:
+The `$ref`s are references. Effect handlers that need to modify state can use these builtin handlers to update state by reference. For example, below is the implementation for the `::toggle` effect used by our `checkbox` example:
 
 ```clojure
 (defeffect ::toggle [$bool]
+  ;; use the builtin :update effect handler
+  ;; to update the reference to $bool
   (dispatch! :update $bool not))
 ```
 
 **Note**: outside of `defui`, the `$` prefix has no special meaning. It's only a convention used in membrane code for bindings that represent references (like `m` for map, `coll` for collections, etc).
 
-Under the hood, membrane relies on [specter](https://github.com/redplanetlabs/specter) to efficiently update nested state. In practice, that means effect handlers require dramatically less code. Frameworks that don't have good support for references require effect handlers to unpack nested data, make modifications, and then repack it again. Below is an example from `re-frame`, but a similar example could be taken from a number of different frameworks {{footnote}}<https://github.com/tastejs/todomvc/blob/gh-pages/examples/scalajs-react/src/main/scala/todomvc/TodoModel.scala#L46>{{/footnote}} {{footnote}}<https://github.com/tastejs/todomvc/blob/gh-pages/examples/typescript-react/js/todoModel.js#L32>{{/footnote}} {{footnote}}<https://github.com/tastejs/todomvc/blob/gh-pages/examples/react-alt/js/stores/todoStore.js#L53>{{/footnote}} {{footnote}}<https://github.com/tastejs/todomvc/blob/gh-pages/examples/react/js/todoModel.js#L54>{{/footnote}} {{footnote}}<https://github.com/tastejs/todomvc/blob/gh-pages/examples/mithril/js/controllers/todo.js#L47>{{/footnote}} {{footnote}}<https://github.com/tastejs/todomvc/blob/gh-pages/examples/vanillajs/js/view.js#L201>{{/footnote}} {{footnote}}<https://github.com/day8/re-frame/blob/master/examples/todomvc/src/todomvc/events.cljs#L189>{{/footnote}}.
+Frameworks that don't have good support for references require effect handlers to unpack nested data, make modifications, and then repack it again. Under the hood, membrane relies on [specter](https://github.com/redplanetlabs/specter) to efficiently update nested state. In practice, that means effect handlers require less code. Code that is simply unpacking and reconstructing nested data can simply be omitted. Below is an example that is unpacking, modifying, and reconstructing a nested data structure. The example is using re-frame, but a similar example could be taken from a number of different frameworks {{footnote}}<https://github.com/tastejs/todomvc/blob/gh-pages/examples/scalajs-react/src/main/scala/todomvc/TodoModel.scala#L46>{{/footnote}} {{footnote}}<https://github.com/tastejs/todomvc/blob/gh-pages/examples/typescript-react/js/todoModel.js#L32>{{/footnote}} {{footnote}}<https://github.com/tastejs/todomvc/blob/gh-pages/examples/react-alt/js/stores/todoStore.js#L53>{{/footnote}} {{footnote}}<https://github.com/tastejs/todomvc/blob/gh-pages/examples/react/js/todoModel.js#L54>{{/footnote}} {{footnote}}<https://github.com/tastejs/todomvc/blob/gh-pages/examples/mithril/js/controllers/todo.js#L47>{{/footnote}} {{footnote}}<https://github.com/tastejs/todomvc/blob/gh-pages/examples/vanillajs/js/view.js#L201>{{/footnote}} {{footnote}}<https://github.com/day8/re-frame/blob/master/examples/todomvc/src/todomvc/events.cljs#L189>{{/footnote}}.
 
 ```clojure
 (reg-event-db
@@ -465,12 +479,12 @@ Under the hood, membrane relies on [specter](https://github.com/redplanetlabs/sp
 ```
 
 
-This example doesn't look so bad, but there's a huge cost. Not only is manually writing code to unpack and repack nested data a waste of time, but the `:toggle-done` handler unnecessarily couples the toggling operation with the nested location of the value. For a small application, it's not a big deal, but the cost grows quickly as the size of the app grows. The coupling between the operation and a particular nested location doesn't just affect reuse, but it also hinders testing ui components in isolation. 
+This example doesn't look so bad, but there's a huge cost. Not only is manually writing code to unpack and repack nested data a waste of time, but the `:toggle-done` handler unnecessarily couples the toggling operation with the nested location of the value. For a small application, it's not a big deal, but the cost grows quickly as the size of the app grows. The coupling between the operation and a particular nested location doesn't just affect reuse, but it also hinders testing UI components in isolation. 
 
 
 ## Incidental State
 
-Using pure functions is great and all, but we've got a huge problem, we often want to use a subcomponent and the subcomponent may have some incidental state that we really don't care about. For example, when we use a textbox, we usually only care about the the text being edited and couldn't care less about the current state of the cursor or text selection. Usually. Sometimes we do care about the cursor position, but not the text selection or vice versa. 
+Using pure functions is great and all, but we've got a huge problem. We often want to use a subcomponent and the subcomponent may have some incidental state that we really don't care about. For example, when we use a textbox, we usually only care about the the text being edited and couldn't care less about the current state of the cursor or text selection. Usually. Sometimes we do care about the cursor position, but not the text selection or vice versa. 
 
 One common mistake made by UI frameworks is that the subcomponent author decides which state is incidental rather than the code using the subcomponent. A key observation is that whether or not subcomponent state is incidental or essential depends on the use case. The parent component should always be in charge of deciding which state is essential and which state is incidental. Essential state should be provided explicitly. Ideally, incidental state should be provided implicitly so that the parent component doesn't have to think about how to wire state that isn't directly related to the problem being solved.
 
@@ -487,21 +501,19 @@ If the parent component decides which state is essential and which state is inci
 ```
 
 
-Ok, so now we know where to put private API state, but if there is no "hidden" state, then it seems like it would be a pain to plumb incidental state all the way to the component that needs it. It would certainly be a nightmare if just using a textbox meant passing a bunch of extra state around for every parent component, grandparent component, and so forth. Fortunately, plumbing incidental state can be automated and is taken care of implicitly by `defui`.
+Ok, so now we know where to put private API state, but if there is no "hidden" state, then it seems like it would be a pain to plumb incidental state all the way to the component that needs it. It would certainly be a nightmare if using a textbox meant passing a bunch of extra state around for every parent component, grandparent component, and so forth. Fortunately, plumbing incidental state can be automated and is taken care of implicitly by `defui`.
 
 When a component is defined using `defui`, its var is adorned with metadata that marks it as a membrane component. Calls to membrane components within the body of a membrane component definition will automatically provide any incidental state necessary for child components.
 
-
-_Explain more about how incidental state works?_
-
-* each component can have incidental state
-* individual state is "indexed" by the identities of the other provided state
+<!-- _Explain more about how incidental state works?_ -->
+<!-- * each component can have incidental state -->
+<!-- * individual state is "indexed" by the identities of the other provided state -->
 
 ### Contextual State
 
 The next category of state we'll cover is contextual state. The most prominent example of contextual state is focus which is mostly about deciding which component should be responding to keyboard events. Generally speaking, contextual state smells a lot like global state so it is used sparingly. Contextual state is handled exactly the same way as incidental state, except rather than every component having its own incidental state, every component shares the same context. 
 
-To declare a component property as contextual, simply add the `:membrane.component/contextal` key to the metadata for the property like so:
+To declare a component property as contextual, simply add the `:membrane.component/contextual` key to the metadata for the property like so:
 
 ```clojure
 (defui my-component [{:keys [a
@@ -532,10 +544,11 @@ A user interface is the combination of the two pure functions:
 
 A UI **component** is just a user interface whose event function returns intents with references to parts of the state passed in.
 
-Using this definition, we can now answer "What is checkbox?".
-checkbox arguments: A true/false value.
-view function: Returns a view that can represent two states (true/false) that correspond to the argument passed in.
-event function: When clicked, returns an intent that toggles the value passed in. The default behavior for toggling should be logical negation.
+Using this definition, we can now answer "What is checkbox?". We should be able to break down any component into its arguments, view function, event function, and default behavior. The break down for a checkbox is as follows:
+* **checkbox arguments**: A true/false value.
+* **view function**: Returns a view that can represent two states (true/false) that correspond to the argument passed in.
+* **event function**: When clicked, returns an intent that toggles the value passed in. 
+* **default behavior**: The default behavior for toggling should be logical negation.
 
 In code:
 ```clojure
@@ -552,18 +565,17 @@ In code:
    (ui/checkbox checked?)))
 ```
 
-We should be able to break down any component into its arguments, view function, event function, and default behavior.
+
 
 # Reusability
 
-We've finally covered all the different topics needed to build users interfaces out of data and pure functions. Ultimately, the goal is to make UI code more flexible, more reusable, and easier to reason about. Briefly, we'll cover some examples that highlight our achievements.
+We've finally covered all the different topics needed to build users interfaces out of data and pure functions. Ultimately, the goal is to make UI code more flexible, more reusable, and easier to reason about. Briefly, we'll cover some examples that highlight our progress.
 
-
-There are several examples of how UI interfaces aren't reusable:
+Below are several examples of how UI interfaces ususally aren't reusable:
 * Testing user interfaces is cumbersome, highly manual, and/or ineffective
 * Components from different frameworks don't compose
 * Often, components from the same framework don't compose
-* Unnecessary state and coupling undermines tooling
+* Unnecessary coupling between components and state management undermines tooling
 
 By using data and pure functions, we can recover each of these capabilities. By default, everything snaps together, but the individual pieces can be extracted.
 
@@ -582,13 +594,13 @@ Some examples of property based tests that may be interesting for views:
 * What are colors are shown?
 * and more!
 
-Arguments to the view and event functions are just data and can described with `spec`. Given a spec for a component's arguments, it's trivial to procedurally generate views and event handlers. Given an event handler, it's trivial to programmatically generate events to plug into the event function to generate intents. Given an effect handler, the generated events can then exercise the effect handler. Basically, programmatically testing and driving a UI is as simple as testing and driving any other program.
+Arguments to the view and event functions are just data and can be described with `spec`. Given a spec for a component's arguments, it's trivial to procedurally generate views and event handlers. Given an event handler, it's trivial to programmatically generate events for the event function to generate intents. Given an effect handler, the generated events can then exercise the effect handler. Basically, programmatically testing and driving a UI is as simple as testing and driving any other program.
   
 ## Composing Components
 
-Membrane components can also be used from other UI frameworks. All that is required is to write a way to wrap a component with whichever state management option you desire. The transformation is entirely mechanical. A converter for each of re-frame{{footnote}}<https://github.com/phronmophobic/membrane-re-frame-example/blob/master/src/membrane_re_frame_example/term_view.clj#L20>{{/footnote}}, fulcro{{footnote}}<https://github.com/phronmophobic/membrane-fulcro/blob/main/src/com/phronemophobic/todo.clj#L26>{{/footnote}}, and cljfx{{footnote}}<https://github.com/phronmophobic/membrane/blob/master/src/membrane/cljfx.clj#L914>{{/footnote}} is provided within membrane. For example, `membrane.re-frame/defrf` can transform any membrane component into a re-frame component. In theory, a converter could be written for any state management framework. 
+Membrane components can also be used from other UI frameworks. All that is required is to write a function that wraps a component with whichever state management option you desire. The transformation is entirely mechanical. A converter for each of re-frame{{footnote}}<https://github.com/phronmophobic/membrane-re-frame-example/blob/master/src/membrane_re_frame_example/term_view.clj#L20>{{/footnote}}, fulcro{{footnote}}<https://github.com/phronmophobic/membrane-fulcro/blob/main/src/com/phronemophobic/todo.clj#L26>{{/footnote}}, and cljfx{{footnote}}<https://github.com/phronmophobic/membrane/blob/master/src/membrane/cljfx.clj#L914>{{/footnote}} is provided within membrane. For example, `membrane.re-frame/defrf` can transform any membrane component into a re-frame component. In theory, a converter could be written for any state management framework. 
 
-Every UI framework has its own library of components that are all incompatible with every other UI framework. This is a huge waste of effort. Developers should be able to choose the framework that best suits them, but still have access to components from other frameworks. Why shouldn't UI components be usable from other frameworks? We already know how to do this. If we build our programs with data and pure functions, we reap flexibility and reuse.
+Every UI framework has its own library of components that are all incompatible with every other UI framework. This is a huge waste of effort. Developers should be able to choose the framework that best suits them, but still have access to components from other frameworks. Why shouldn't UI components be usable from other frameworks? We already know how to do this{{footnote}}<ttps://day8.github.io/re-frame/reusable-components/#implications>{{/footnote}}. If we build our programs with data and pure functions, we reap flexibility and reuse.
 
 
 # To Be Continued

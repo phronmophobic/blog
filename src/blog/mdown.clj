@@ -601,8 +601,12 @@
 
                  (print "rendering blog...")
                  (flush)
-                 (render-post! post)
-                 (print " done.\n")
+                 (try
+                   (render-post! post)
+                   (print " done.\n")
+                   (catch Exception e
+                     (println "error: \n")
+                     (prn e)))
                  (flush))
 
                (Thread/sleep 500 )

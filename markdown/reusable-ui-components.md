@@ -312,7 +312,7 @@ References only make sense for data that derives from arguments to the component
 ;;                 (keypath :d)]])
 ```
 
-Currently, `defui` translates references to nested references, but the same syntax could be used with a data model that wants identifers or stateful references. One benefit of using using nested references is that they can be automatically translated to identifiers if a schema is provided (_link to example_).
+Currently, `defui` translates references to nested references, but the same syntax could be used with a data model that wants identifiers or stateful references. One benefit of using using nested references is that they can be automatically translated to identifiers if a schema is provided (_link to example_).
 
 If desired, we can now extract the button as its own reusable component.
 
@@ -367,7 +367,7 @@ Macros that introduce syntax are viewed with skepticism and they should be. It's
 
 One major drawback that comes up with macros is that they often limit composability. Functions can be passed around, partially applied, and invoked programmatically and macros can't. Fortunately, this drawback doesn't apply to `defui` since its only purpose is to define a component. The component itself is just a pure function. The extra syntax is just sugar to reduce boilerplate and it's straightforward to replace a `defui` definition with either more verbose code or simply generate the same result programmatically.
 
-A user interface is inherently about communication between a user and a software application. Application data is passed to the UI to produce the view and the user manipulates input devices like the keyboard and mouse to interact with the application data. Being able to easily refer to the nested entities being displayed aligns naturally with the UI's goal of translating raw input events like clicks and keypresses into user intents.
+A user interface is inherently about communication between a user and a software application. Application data is passed to the UI to produce the view and the user manipulates input devices like the keyboard and mouse to interact with the application data. Being able to easily refer to the nested entities being displayed aligns naturally with the UI's goal of translating raw input events like clicks and key presses into user intents.
 
 Below is the definition for a checkbox:
 ```clojure
@@ -413,7 +413,7 @@ To make it easier to write effect handlers, membrane provides `defeffect` which 
   (fire-missile! missile target))
 ```
 
-For the most part, it looks and behaves similar to a normal function definition. Below is what the macroexpanded version looks like:
+For the most part, it looks and behaves similar to a normal function definition. Below is what the macro expanded version looks like:
 
 ```clojure
 (let [fvar (defn effect-fire-missiles! [dispatch! missile target]
@@ -430,9 +430,9 @@ For the most part, it looks and behaves similar to a normal function definition.
 
 Since the effect handler is registered globally, fully qualified keywords are highly encouraged. The name of the function defined in the current namespace will be the same as the name of the intent with "effect-" prefixed to the name. The main reason for the prefix is that the effect handler (eg. `effect-fire-missiles!`) may want to rely on a similarly named function (eg. `fire-missiles!`) in the same namespace. The effect handler function defined in the local namespace won't generally be used directly, but it should have its own name so it can be tested/debugged/etc independently of the rest of the UI.
 
-The last difference between `defeffect` and `defn` is that an implicit argument, `dispatch!`, is preprended to its argument list. We want to allow effect handlers to define themselves in terms of other effect handlers, but we don't want to directly connect implementation of effect handlers. For example, in development we may want the effect handler for `::notify-user` to print to stdout while, in production, dispatching a `::notify-user` effect may send an email or text message. 
+The last difference between `defeffect` and `defn` is that an implicit argument, `dispatch!`, is prepended to its argument list. We want to allow effect handlers to define themselves in terms of other effect handlers, but we don't want to directly connect implementation of effect handlers. For example, in development we may want the effect handler for `::notify-user` to print to stdout while, in production, dispatching a `::notify-user` effect may send an email or text message. 
 
-The default effect handler uses all of the globally defined effect handlers are used, but an alternate effect handler that augments, intruments, replaces, or removes effect handlers can be easily be produced and provided as the effect handler for a user interface.
+The default effect handler uses all of the globally defined effect handlers are used, but an alternate effect handler that augments, instruments, replaces, or removes effect handlers can be easily be produced and provided as the effect handler for a user interface.
 
 
 ### Processing Effects With References
@@ -465,7 +465,7 @@ Under the hood, membrane relies on [specter](https://github.com/redplanetlabs/sp
 ```
 
 
-This example doesn't look so bad, but there's a huge cost. Not only is manually writing code to unpack and repack nested data a waste of time, but the `:toggle-done` handler unnecessarily couples the toggling operation with the nested location of the value. For a small applicatoin, it's not a big deal, but the cost grows quickly as the size of the app grows. The coupling between the operation and a particular nested location doesn't just affect reuse, but it also hinders testing ui components in isolation. 
+This example doesn't look so bad, but there's a huge cost. Not only is manually writing code to unpack and repack nested data a waste of time, but the `:toggle-done` handler unnecessarily couples the toggling operation with the nested location of the value. For a small application, it's not a big deal, but the cost grows quickly as the size of the app grows. The coupling between the operation and a particular nested location doesn't just affect reuse, but it also hinders testing ui components in isolation. 
 
 
 ## Incidental State
@@ -534,7 +534,7 @@ A UI **component** is just a user interface whose event function returns intents
 
 Using this definition, we can now answer "What is checkbox?".
 checkbox arguments: A true/false value.
-view function: Returns a view that can represent two states (true/false) that corresopond to the argument passed in.
+view function: Returns a view that can represent two states (true/false) that correspond to the argument passed in.
 event function: When clicked, returns an intent that toggles the value passed in. The default behavior for toggling should be logical negation.
 
 In code:
@@ -578,11 +578,11 @@ A component can be broken into its view function and event function. Events func
 Some examples of property based tests that may be interesting for views:
 * Does the view fit within some bounds?
 * Does the view contain overlapping text?
-* Are interactable elements obscured, invisible, or too small?
+* Are interactive elements obscured, invisible, or too small?
 * What are colors are shown?
 * and more!
 
-Arguments to the view and event functions are just data and can described with `spec`. Given a spec for a component's arguments, it's trivial to procedurally generate views and event handlers. Given an event handler, it's trivial to programatically generate events to plug into the event function to generate intents. Given an effect handler, the generated events can then excercise the effect handler. Basically, programmatically testing and driving a UI is as simple as testing and driving any other program.
+Arguments to the view and event functions are just data and can described with `spec`. Given a spec for a component's arguments, it's trivial to procedurally generate views and event handlers. Given an event handler, it's trivial to programmatically generate events to plug into the event function to generate intents. Given an effect handler, the generated events can then exercise the effect handler. Basically, programmatically testing and driving a UI is as simple as testing and driving any other program.
   
 ## Composing Components
 

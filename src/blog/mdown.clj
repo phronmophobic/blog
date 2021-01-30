@@ -541,6 +541,19 @@
    :src "markdown/ui-model.md"
    :out "resources/public/ui-model.html"})
 
+
+(defpost reusable-ui-components
+  {:id :reusable-ui-components
+   :title "Reusable UI Components"
+   :subheading "How to build a functional UI library from scratch: Part III"
+   :nav [:div {:class "container"}
+         [:nav.nav.blog-nav
+          [:a.nav-link
+           "&nbsp;"]]]
+   :asset-prefix "ui-model/"
+   :src "markdown/reusable-ui-components.md"
+   :out "resources/public/reusable-ui-components.html"})
+
 (defpost html-tax-post
   {:id :html-tax
    :title "The HTML Tax"

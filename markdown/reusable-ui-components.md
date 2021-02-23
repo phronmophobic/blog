@@ -5,7 +5,7 @@ _This post is the third  in a series of posts explaining the design principles b
 Previous posts: [What is a User Interface?](what-is-a-user-interface.html), [Implementing a Functional UI Model](ui-model.html)
 
 
-<!-- Feedback is appreciated. Discuss on [reddit](https://www.reddit.com/r/Clojure/comments/kb8mbp/implementing_a_functional_ui_model/) or file an issue on [membrane's](https://github.com/phronmophobic/membrane/issues/new) github repo. -->
+Feedback is appreciated. Discuss on [reddit](https://www.reddit.com/r/Clojure/comments/lq1os0/reusable_ui_components/) or [github](https://github.com/phronmophobic/membrane/discussions) github.
 
 # Introduction
 
@@ -117,7 +117,7 @@ This is the easiest case. We already know how to accomplish this. A view with no
 
 For our first example, let's examine a simple component which shows a "More!" button and a counter. Clicking the "More!" button will increment the counter.
 
-_gif of counter here_
+![Counter UI](ui-state/counter.gif)
 
 ```clojure
 (defn counter-ui [num]
@@ -133,7 +133,7 @@ Notice that the mouse-down event handler returns the `[:inc-counter]` intent. We
 ```clojure
 ;; check to make sure
 ;; :inc-counter intent is returned when
-;; a mouse down event within
+;; a mouse down event occurs within
 ;; the More! button's bounds
 (ui/mouse-down (counter-ui 10)
                [0 0])
@@ -442,7 +442,7 @@ For the most part, it looks and behaves similar to a normal function definition.
 
 Since the effect handler is registered globally, fully qualified keywords are highly encouraged. The name of the function defined in the current namespace will be the same as the name of the intent with "effect-" prefixed to the name. The main reason for the prefix is that the effect handler (eg. `effect-fire-missiles!`) may want to rely on a similarly named function (eg. `fire-missiles!`) in the same namespace. The effect handler function defined in the local namespace won't generally be used directly, but it should have its own name so it can be tested/debugged/etc independently of the rest of the UI.
 
-The last difference between `defeffect` and `defn` is that an implicit argument, `dispatch!`, is prepended to its argument list. We want to allow effect handlers to define themselves in terms of other effect handlers, but we don't want to directly connect implementation of effect handlers. For example, in development we may want the effect handler for `::notify-user` to print to stdout. In production, dispatching a `::notify-user` effect may send an email or text message. 
+The last difference between `defeffect` and `defn` is that an implicit argument, `dispatch!`, is prepended to its argument list. We want to allow effect handlers to define themselves in terms of other effect handlers, but we don't want to directly connect implementations of effect handlers. For example, in development we may want the effect handler for `::notify-user` to print to stdout. In production, dispatching a `::notify-user` effect may send an email or text message. 
 
 The default effect handler uses all of the globally defined effect handlers, but an alternate effect handler that augments, instruments, replaces, or removes effect handlers can be easily be produced and provided as the effect handler for a user interface.
 
@@ -489,7 +489,7 @@ Using pure functions is great and all, but we've got a huge problem. We often wa
 One common mistake made by UI frameworks is that the subcomponent author decides which state is incidental rather than the code using the subcomponent. A key observation is that whether or not subcomponent state is incidental or essential depends on the use case. The parent component should always be in charge of deciding which state is essential and which state is incidental. Essential state should be provided explicitly. Ideally, incidental state should be provided implicitly so that the parent component doesn't have to think about how to wire state that isn't directly related to the problem being solved.
 
 ### Public API vs Private API
-If the parent component decides which state is essential and which state is incidental, how do you keep the parent component from mucking with implementation details in the subcomponent? Deciding which state is part of the public API and which state is part of the private API is a separate, but related question. Public/private API state vs essential/incidental state is often conflated, but they're not the same thing. State that's part of the private API for a component should be, by definition, incidental state. However, it's important to note that even if state is part of the private API, it's often useful when debugging/developing/testing for the parent component to be able to treat the private state as an opaque value. For example, a bug may only occur when private state has a certain value and if the private state is completely inaccessible, then have fun trying to write tests or debug the issue.{{footnote}}If you've ever tried to work around an issue caused by Chrome Autofill, you know the depths of despair that private, hidden state can cause.{{/footnote}} The recommended way to handle private API state in a membrane component is to put all the private state in a single map under a key named `:private`.
+If the parent component decides which state is essential and which state is incidental, how do you keep the parent component from mucking with implementation details in the subcomponent? Deciding which state is part of the public API and which state is part of the private API is a separate, but related question. Public/private API state vs essential/incidental state is often conflated, but they're not the same thing. State that's part of the private API for a component should be, by definition, incidental state. However, it's important to note that even if state is part of the private API, it's often useful when debugging/developing/testing for the parent component to be able to treat the private state as an opaque value. For example, a bug might only occur when private state has a certain value and if the private state is completely inaccessible, then have fun trying to write tests or debug the issue.{{footnote}}If you've ever tried to work around an issue caused by Chrome Autofill, you know the depths of despair that private, hidden state can cause.{{/footnote}} The recommended way to handle private API state in a membrane component is to put all the private state in a single map under a key named `:private`.
 
 ```clojure
 ;; store private API state in private variable
@@ -503,7 +503,7 @@ If the parent component decides which state is essential and which state is inci
 
 Ok, so now we know where to put private API state, but if there is no "hidden" state, then it seems like it would be a pain to plumb incidental state all the way to the component that needs it. It would certainly be a nightmare if using a textbox meant passing a bunch of extra state around for every parent component, grandparent component, and so forth. Fortunately, plumbing incidental state can be automated and is taken care of implicitly by `defui`.
 
-When a component is defined using `defui`, its var is adorned with metadata that marks it as a membrane component. Calls to membrane components within the body of a membrane component definition will automatically provide any incidental state necessary for child components.
+When a component is defined using `defui`, its var is adorned with metadata that marks it as a membrane component. Calls to membrane components within the body of a membrane component definition will automatically provide any incidental state necessary for child components. Superficially, accessing incidental state with automatic plumbing looks and feels similar to using `this.state`/`.setState`/`useState` from React, but it's architecturally very different. Rather than state being shoved in hidden, inaccessible places, the incidental state is stored in a well defined part of the normal application state. Having access to all of the UI state simplifies testing, debugging, and tooling.
 
 <!-- _Explain more about how incidental state works?_ -->
 <!-- * each component can have incidental state -->
@@ -571,7 +571,7 @@ In code:
 
 We've finally covered all the different topics needed to build users interfaces out of data and pure functions. Ultimately, the goal is to make UI code more flexible, more reusable, and easier to reason about. Briefly, we'll cover some examples that highlight our progress.
 
-Below are several examples of how UI interfaces ususally aren't reusable:
+Below are several examples of how UI interfaces usually aren't reusable:
 * Testing user interfaces is cumbersome, highly manual, and/or ineffective
 * Components from different frameworks don't compose
 * Often, components from the same framework don't compose
@@ -585,13 +585,13 @@ Testing in UI code tends to be less common. It's difficult to break user interfa
 
 The main benefit of just using data and pure functions is that nothing special is required for testing. Testing UI code is just like testing code for any other domain.
 
-A component can be broken into its view function and event function. Events functions are just functions that return intents (ie. data). Crucially, view functions are also just functions that return views (ie. data). Based off our work in part I and part II, it's even possible to do generative and property based testing with view functions.
+A component can be broken into its view function and event function. Events functions are just functions that return intents (ie. data). Crucially, view functions are just functions that return views (ie. data). Based off our work in part I and part II, it's even possible to do generative and property based testing with view functions.
 
 Some examples of property based tests that may be interesting for views:
-* Does the view fit within some bounds?
-* Does the view contain overlapping text?
+* Does the view fit within some bounds for all possible inputs?
+* Does the view contain no overlapping text for all possible inputs?
 * Are interactive elements obscured, invisible, or too small?
-* What are colors are shown?
+* Are there pairs of foreground/background elements that have low contrast?
 * and more!
 
 Arguments to the view and event functions are just data and can be described with `spec`. Given a spec for a component's arguments, it's trivial to procedurally generate views and event handlers. Given an event handler, it's trivial to programmatically generate events for the event function to generate intents. Given an effect handler, the generated events can then exercise the effect handler. Basically, programmatically testing and driving a UI is as simple as testing and driving any other program.
@@ -600,7 +600,7 @@ Arguments to the view and event functions are just data and can be described wit
 
 Membrane components can also be used from other UI frameworks. All that is required is to write a function that wraps a component with whichever state management option you desire. The transformation is entirely mechanical. A converter for each of re-frame{{footnote}}<https://github.com/phronmophobic/membrane-re-frame-example/blob/master/src/membrane_re_frame_example/term_view.clj#L20>{{/footnote}}, fulcro{{footnote}}<https://github.com/phronmophobic/membrane-fulcro/blob/main/src/com/phronemophobic/todo.clj#L26>{{/footnote}}, and cljfx{{footnote}}<https://github.com/phronmophobic/membrane/blob/master/src/membrane/cljfx.clj#L914>{{/footnote}} is provided within membrane. For example, `membrane.re-frame/defrf` can transform any membrane component into a re-frame component. In theory, a converter could be written for any state management framework. 
 
-Every UI framework has its own library of components that are all incompatible with every other UI framework. This is a huge waste of effort. Developers should be able to choose the framework that best suits them, but still have access to components from other frameworks. Why shouldn't UI components be usable from other frameworks? We already know how to do this{{footnote}}<ttps://day8.github.io/re-frame/reusable-components/#implications>{{/footnote}}. If we build our programs with data and pure functions, we reap flexibility and reuse.
+Every UI framework has its own library of components that are all incompatible with every other UI framework. This is a huge waste of effort. Developers should be able to choose the framework that best suits them, but still have access to components from other frameworks. Why shouldn't UI components be usable from other frameworks? We already know how to do this{{footnote}}<https://day8.github.io/re-frame/reusable-components/#implications>{{/footnote}}. If we build our programs with data and pure functions, we reap flexibility and reuse.
 
 
 # To Be Continued

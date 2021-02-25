@@ -427,9 +427,12 @@
                          subheading
                          nav
                          src
+                         body
                          asset-prefix]
                   :as post}]
-  (let [body (parse-blog src)]
+  (let [body (if body
+               body
+               (parse-blog src))]
     [:html {:lang "en"}
      [:head
 
@@ -494,22 +497,9 @@
   )
 
 
-(defpost treemap-post
-  {:id :treemap
-   :title "Treemaps are awesome!"
-   :subheading "An alternative to pprint for generically visualizing heterogeneous, hierarchical data"
-   :nav [:div {:class "container"}
-         [:nav.nav.blog-nav
-          [:a.nav-link.active {:href "#"}
-           "Treemaps are awesome!"]
-          [:a.nav-link {:href "treemap-demo.html"}
-           "Treemap Demo"]
-          [:a.nav-link {:href "https://github.com/phronmophobic/treemap-clj"}
-           "Code on Github"]]]
-   :src "markdown/treemaps-are-awesome.md"
-   :out "resources/public/treemaps-are-awesome.html"})
 
-(defpost functional-ui-post
+
+#_(defpost functional-ui-post
   {:id :functional-ui
    :title "Rethinking Functional UI Software design"
    :subheading "The div must die"
@@ -522,7 +512,7 @@
                 [:a.nav-link {:href "https://github.com/phronmophobic/treemap-clj"}
                  "Code on Github"]]]
    :src "markdown/functional-ui.md"
-   :out "resources/public/functional-ui.html"})
+   :out "functional-ui.html"})
 
 
 (defpost what-is-a-ui
@@ -532,10 +522,11 @@
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav
           [:a.nav-link
-           "&nbsp;"]]]
+           {:href "/"}
+           "Home"]]]
    :asset-prefix "what-is-a-user-interface/"
    :src "markdown/what-is-a-user-interface.md"
-   :out "resources/public/what-is-a-user-interface.html"})
+   :out "what-is-a-user-interface.html"})
 
 (defpost ui-model
   {:id :ui-model
@@ -544,10 +535,11 @@
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav
           [:a.nav-link
-           "&nbsp;"]]]
+           {:href "/"}
+           "Home"]]]
    :asset-prefix "ui-model/"
    :src "markdown/ui-model.md"
-   :out "resources/public/ui-model.html"})
+   :out "ui-model.html"})
 
 
 (defpost reusable-ui-components
@@ -557,10 +549,12 @@
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav
           [:a.nav-link
-           "&nbsp;"]]]
+           {:href "/"}
+           "Home"]]]
    :asset-prefix "ui-model/"
    :src "markdown/reusable-ui-components.md"
-   :out "resources/public/reusable-ui-components.html"})
+   :out "reusable-ui-components.html"})
+
 
 (defpost html-tax-post
   {:id :html-tax
@@ -569,10 +563,30 @@
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav
           [:a.nav-link
-           "&nbsp;"]]]
+           {:href "/"}
+           "Home"]]]
    :asset-prefix "html-tax/"
    :src "markdown/html-tax.md"
-   :out "resources/public/html-tax.html"})
+   :out "html-tax.html"})
+
+(defpost treemap-post
+  {:id :treemap
+   :title "Treemaps are awesome!"
+   :subheading "An alternative to pprint for generically visualizing heterogeneous, hierarchical data"
+   :asset-prefix "treemaps-are-awesome/"
+   :nav [:div {:class "container"}
+         [:nav.nav.blog-nav
+          [:a.nav-link
+           {:href "/"}
+           "Home"]
+          [:a.nav-link.active {:href "#"}
+           "Treemaps are awesome!"]
+          [:a.nav-link {:href "treemap-demo.html"}
+           "Treemap Demo"]
+          [:a.nav-link {:href "https://github.com/phronmophobic/treemap-clj"}
+           "Code on Github"]]]
+   :src "markdown/treemaps-are-awesome.md"
+   :out "treemaps-are-awesome.html"})
 
 (defn render-post! [{:keys [title
                             subheading
@@ -582,7 +596,7 @@
                      :as post}]
   (let [page-html (blog-page post)
         html-str (html page-html)]
-    (spit (:out post) html-str)))
+    (spit (str "resources/public/" (:out post)) html-str)))
 
 (defonce running? (atom false))
 (defn watch-blog [post-id]
@@ -611,6 +625,22 @@
 
                (Thread/sleep 500 )
                (recur current-val))))))))
+
+(defn render-index []
+  (let [page-html (blog-page
+                   {:title "Phronemophobic's Blog"
+                    :body [:div
+                           (for [post (vals @POSTS)]
+                             [:div
+                              [:a {:href (:out post)}
+                               (:title post)]])]
+                    :asset-prefix "/"})
+        html-str (html page-html)]
+    (spit "resources/public/index.html" html-str)))
+
+(defn render-all! []
+  (render-index)
+  (run! render-post! (vals @POSTS)))
 
 (defn -main [ & args]
   (watch-blog (keyword (first args))))

@@ -224,6 +224,8 @@ Stay tuned for more posts on the design of membrane where we answer questions li
 * What tools and workflows should be supported?
 * How can we give designers better control over the output of their work?
 
+Next: [Implementing a Functional UI Model](ui-model.html)
+
 # Footnotes
 
 {{footnotes/}}

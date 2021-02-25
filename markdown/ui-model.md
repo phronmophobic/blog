@@ -2,7 +2,8 @@
 
 _This post is the second in a series of posts explaining the design principles behind [membrane](https://github.com/phronmophobic/membrane), a cross platform library for building fully functional user interfaces in clojure(script)._
 
-
+Next: [Reusable UI Components](reusable-ui-components.html)
+Previous: [What is a User Interface?](what-is-a-user-interface.html)
 
 Feedback is appreciated. Discuss on [reddit](https://www.reddit.com/r/Clojure/comments/kb8mbp/implementing_a_functional_ui_model/) or file an issue on [membrane's](https://github.com/phronmophobic/membrane/issues/new) github repo.
 
@@ -541,6 +542,10 @@ Look! It's one the event functions, `mouse-event`! Similar to the `view-fn`, `mo
 # Conclusion
 
 We've now covered how membrane implements the Functional UI Model covered in the first post. Using the same (old) functional techniques, we've replaced the common OO graphics and event models with functional ones. In the next post, we'll cover state management and show how to reap the benefits of working with data and pure functions.
+
+Next: [Reusable UI Components](reusable-ui-components.html)
+Previous: [What is a User Interface?](what-is-a-user-interface.html)
+
 
 # Appendix
 

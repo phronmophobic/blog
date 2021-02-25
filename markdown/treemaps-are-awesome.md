@@ -6,7 +6,7 @@ Treemaps are space filling. You provide the bounds, and the the treemap algorith
 
 Treemaps will use as many pixels as are available to represent the underlying data. In general, more pixels means more clarity. However, the treemap performs well even at relatively small sizes.
 
-![Sizes Example](images/sizes-example.gif)
+![Sizes Example](treemaps-are-awesome/images/sizes-example.gif)
 
 Treemaps are very flexible. They can visualize any data that is tree-like which includes any data that can be represented as JSON or edn. 
 
@@ -32,7 +32,7 @@ The size of each rectangle is proportional to the size of the associated tree no
 
 Here's what the process of subdivision looks like.
 
-![basic subdivide](images/basic-subdivide.gif)
+![basic subdivide](treemaps-are-awesome/images/basic-subdivide.gif)
 
 You can see that the naive treemap shows some of the structure of the data we're trying to visualize, but many elements of the data's structure aren't revealed in this basic treemap. Next, we'll look at a few tricks for improving our treemaps to capture more elements of our data's structure. The following is by no means an exhaustive list of techniques. In fact, there's tremendous room for experimentation and improvement.
 
@@ -50,7 +50,7 @@ Treemaps are really good at using all the available pixels, but there's still a 
 
 One of the more obvious improvements is to paint the background of each rectangle with the type of the data it represents. Here's what that looks like:
 
-![Type Background](images/type-background.png)
+![Type Background](treemaps-are-awesome/images/type-background.png)
 
 Great, now we can see the types of our tree. However, there's a little snag in our plan. It turns out that for most JSON in the wild, the data is mostly comprised of just strings and numbers. It's really higher level data types that we would be interested in, but if we're interested in summarizing the data, it might be because don't have a schema handy. Automatically inferring data types is something we can work on, but let's move on to other options for now.
 
@@ -58,7 +58,7 @@ Great, now we can see the types of our tree. However, there's a little snag in o
 
 One of the issues with just showing types is that it doesn't tell us much about the actual structure of the data. Just from the types, we can't tell how deep or how wide the data is. If we're not using the background color to represent the types in the data, we can use it for depth:
 
-![Depth Background](images/depth-background.png)
+![Depth Background](treemaps-are-awesome/images/depth-background.png)
 
 Using the color for depth certainly illuminates whether or not our data structure is deep or wide, but it can still be difficult to decipher the structure of the example data. For example, "Which rectangles share the same parent?"
 
@@ -66,7 +66,7 @@ Using the color for depth certainly illuminates whether or not our data structur
 
 One way to visualize which rectangles share the same parent is to add a little padding around each level.
 
-![Depth Background](images/depth-padding.png)
+![Depth Background](treemaps-are-awesome/images/depth-padding.png)
 
 Awesome. Just a little spacing helps track the different branches of the tree and see which elements share the same parents. However, there are some limitations with using only spacing to show grouping. How much padding should each level of the hierarchy have? Adding too little padding makes the hierarchies less apparent. Adding too much spacing can waste pixels that could otherwise be more effective. The shape of the data will also influence how much padding is necessary. Determining the amount of padding that works well on various different types of data is still an area that needs work.
 
@@ -74,13 +74,13 @@ Awesome. Just a little spacing helps track the different branches of the tree an
 
 Another way to visualize the shape of data is to simply draw lines from parents to their children. We can even change the color of the line to show what type each collection is.
 
-![Line Depth](images/line-bare-demo.png)
+![Line Depth](treemaps-are-awesome/images/line-bare-demo.png)
 
 The main drawback of hierarchy lines is that the lines can overlap and obscure descendant rectangles. We can partially alleviate the overlapping issue by reducing the hierarchy line's opacity near the top of the tree. However, for certain data shapes, the lines can still be an issue. Another way to declutter the graphic while still utilizing hierarchy lines is to allow the user to hover over the graphic and only show the hierarchy line of the element that is currently under the mouse.
 
 Below is a visualization of the same data as above, but using the background to show depth and only showing the hierarchy lines when hovering.
 
-![Lines Interactive](images/lines-interactive-shrunk.gif)
+![Lines Interactive](treemaps-are-awesome/images/lines-interactive-shrunk.gif)
 
 ## Labels
 
@@ -91,7 +91,7 @@ For small examples it's possible to simply label all of the data.
  :b [0 1 2 3 4],
  :c [0 1 2 3 4]}
 ```
-![Simple Label Example](images/simple-label-example.png)
+![Simple Label Example](treemaps-are-awesome/images/simple-label-example.png)
 
 ## Key path labels
 
@@ -99,15 +99,15 @@ One common form of nesting is maps containing other maps. We can highlight impor
 
 Below is a treemap of all the public interns of namespaces on treemap-cljs's classpath that start with `clojure.*`.
 
-![Keyed Example](images/keyed-example.png)
+![Keyed Example](treemaps-are-awesome/images/keyed-example.png)
 
 As an additional help the user, we allow the user to hover over the data and show the key path that it would take to traverse the data to that leaf node.
 
-![Hover Keyed Example](images/hover-keypath-shrunk.gif)
+![Hover Keyed Example](treemaps-are-awesome/images/hover-keypath-shrunk.gif)
 
 Not only does showing the key path while hovering help show where the data is situated, we can use the key paths as part of the UI itself. As we hover over the keypath, watch as the area for that subsection of the tree is highlighted in the treemap graphic.
 
-![Hover Box Example](images/keypath-box-hover-shrunk.gif)
+![Hover Box Example](treemaps-are-awesome/images/keypath-box-hover-shrunk.gif)
 
 
 # Comparisons with alternatives

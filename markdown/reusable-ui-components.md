@@ -143,7 +143,7 @@ Notice that the mouse-down event handler returns the `[:inc-counter]` intent. We
 Now that we verified the intent is returned as expected, we can hook it up to an effect handler.
 
 ```clojure
-;; Using same effect handler in the Effects example
+;; Using the same effect handler in the Effects example
 (def my-counter-effect-handler (make-counter-effect-handler))
 
 (my-counter-effect-handler [:get-count])

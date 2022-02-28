@@ -175,7 +175,7 @@ As a real example of how a baked in event model contorts UI libraries, let's tak
 
 The issue is fairly long, but I'll try to summarize. Basically, re-frame's state management (ie. subscriptions) and event handling (ie. `dispatch`) rely on global state. It would be great to be able to have multiple re-frame instances running on the same page in straightforward way.
 
-> Except, that means you have to pass frame down through the entire function call tree which is arduous. Really arduous. There's something completely delicious and simple about the use of global dispatch and subscribe, even though it is clearly evil in some ways.
+> Except, that means you have to pass `frame` down through the entire function call tree which is arduous. Really arduous. There's something completely delicious and simple about the use of global dispatch and subscribe, even though it is clearly evil in some ways.
 
 It would be really straightforward for the re-frame library to solve this issue if the event model in the browser was pluggable, but since the event model is baked in, it adds a mountain of incidental complexity. <!-- Conversely, since the event model in `membrane` is pluggable, it would be an easy fix {{footnote}}You can already try membrane's experimental [re-frame integration](https://github.com/phronmophobic/membrane-re-frame-example). Multiple re-frame instances still doesn't quite work since in addition to parameterizing `dispatch` and `subscribe`, there's a few other places `re-frame` relies on global state.{{/footnote}} -->
 

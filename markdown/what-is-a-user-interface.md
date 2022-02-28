@@ -182,7 +182,7 @@ It would be really straightforward for the re-frame library to solve this issue 
 
 ### Graphics
 
-Displaying program state is one of the main responsibilities of a user interface. Unfortunately, the graphical building blocks from platform toolkits don't match the building blocks used by designers. You're not going to find a `<div/>` tool in Photoshop or Illustrator. The browser has reasonable support for text and images, but many of the the common elements a designer would use either don't exist or are awkward to implement.
+Displaying program state is one of the main responsibilities of a user interface. Unfortunately, the graphical building blocks from platform toolkits don't match the building blocks used by designers. You're not going to find a `<div/>` tool in Photoshop or Illustrator. The browser has reasonable support for text and images, but many of the common elements a designer would use either don't exist or are awkward to implement.
 
 Not only is there a mismatch between the graphical elements used by designers and programmers, it's very common for UI code to use graphical elements that inextricably couple state and events. As an example, consider a checkbox. Is it possible to draw just the checkbox without any of the associated behavior? Are the graphical elements that produce the checkbox able to be extracted and inspected? As with just about every other simple task on the web, the answer is probably "sorta" with a dozen Stack Overflow posts explaining a handful of options that depend on various subtly different circumstances. This is not a great place to be.
 

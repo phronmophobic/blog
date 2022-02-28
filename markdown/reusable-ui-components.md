@@ -444,7 +444,7 @@ Since the effect handler is registered globally, fully qualified keywords are hi
 
 The last difference between `defeffect` and `defn` is that an implicit argument, `dispatch!`, is prepended to its argument list. We want to allow effect handlers to define themselves in terms of other effect handlers, but we don't want to directly connect implementations of effect handlers. For example, in development we may want the effect handler for `::notify-user` to print to stdout. In production, dispatching a `::notify-user` effect may send an email or text message. 
 
-The default effect handler uses all of the globally defined effect handlers, but an alternate effect handler that augments, instruments, replaces, or removes effect handlers can be easily be produced and provided as the effect handler for a user interface.
+The default effect handler uses all of the globally defined effect handlers, but an alternate effect handler that augments, instruments, replaces, or removes effect handlers can easily be produced and provided as the effect handler for a user interface.
 
 
 ### Processing Effects With References

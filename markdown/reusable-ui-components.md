@@ -172,7 +172,7 @@ Woohoo! We've built our first stateful component. It's a small victory, but we'v
 
 When the "More!" button is clicked, it returns an `[:inc-counter]` intent, but the problem is that it doesn't say _which_ counter should be incremented. What if there is more than one counter? How would we reuse `counter-ui` for controlling multiple counter instances? 
 
-The `counter-ui` is explicitly being passed the count, `num`, which is precisely the counter we would want increment. To improve `counter-ui`, we should change the `[:inc-counter]` intent to specify _which_ counter should be incremented. To specify which counter to increment, we need a way to represent a reference to the count passed to `counter-ui`.
+The `counter-ui` is explicitly being passed the count, `num`, which is precisely the counter we would want to increment. To improve `counter-ui`, we should change the `[:inc-counter]` intent to specify _which_ counter should be incremented. To specify which counter to increment, we need a way to represent a reference to the count passed to `counter-ui`.
 
 # References
 

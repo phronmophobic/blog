@@ -585,7 +585,7 @@ Testing in UI code tends to be less common. It's difficult to break user interfa
 
 The main benefit of just using data and pure functions is that nothing special is required for testing. Testing UI code is just like testing code for any other domain.
 
-A component can be broken into its view function and event function. Events functions are just functions that return intents (ie. data). Crucially, view functions are just functions that return views (ie. data). Based off our work in part I and part II, it's even possible to do generative and property based testing with view functions.
+A component can be broken into its view function and event function. Event functions are just functions that return intents (ie. data). Crucially, view functions are just functions that return views (ie. data). Based off our work in part I and part II, it's even possible to do generative and property based testing with view functions.
 
 Some examples of property based tests that may be interesting for views:
 * Does the view fit within some bounds for all possible inputs?

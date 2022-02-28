@@ -516,7 +516,7 @@ Similar to how we were able to separate the control part of the event loop from 
   (glfw-call void glfwWaitEventsTimeout (double 0.5)))
 ```
 
-It's just a call to `glfwWaitEventsTimeout`{{footnote}}Other are options are `glfwWaitEvents`, `glfwPollEvents`, and `java.lang.Thread/sleep` which are sometimes used for debugging.{{/footnote}}
+It's just a call to `glfwWaitEventsTimeout`{{footnote}}Other options are `glfwWaitEvents`, `glfwPollEvents`, and `java.lang.Thread/sleep` which are sometimes used for debugging.{{/footnote}}
 
 > **glfwWaitEventsTimeout**: It puts the thread to sleep until at least one event has been received, or until the specified number of seconds have elapsed. It then processes any received events.
 > {{blockquote-footer}}GLFW [Input Guide](https://www.glfw.org/docs/latest/input_guide.html){{blockquote-footer}}

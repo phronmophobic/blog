@@ -51,7 +51,7 @@ At 1,297 pages, the [HTML Living Standard](https://html.spec.whatwg.org/print.pd
 
 Logically, HTML is a tree of HTML elements. Each element has a tag name and optional attributes. Depending on the tag type, an element may also have other HTML elements as children. HTML markup contains special elements like `<div>` and `<span>` that the browser interprets to display the HTML document and provide interactivity. 
 
-**For the rest of this post**, when we refer HTML, we're really referring to the special meaning given to the special elements. Further, we're really only focusing on the special elements that affect the graphics, event model, and state management of user interfaces targeting the web browser.
+**For the rest of this post**, when we refer to HTML, we're really referring to the special meaning given to the special elements. Further, we're really only focusing on the special elements that affect the graphics, event model, and state management of user interfaces targeting the web browser.
 
 While we're clearing the air, I'd like to emphasize that there is absolutely nothing wrong with defining a user interface in terms of a tree of tagged elements and attributes. The issues brought up in this post focus solely on the semantics associated with the special elements imparted by the browser. Practically speaking, that means that if you're using a ui framework that doesn't care whether you're using `<div>`s, `<View>`s, or any other specific tag type, then your framework is in harmony with the views of this post. Fortunately, most popular frameworks like React, re-frame, Angular, or any framework that allows user defined components are philosophically compatible.
 

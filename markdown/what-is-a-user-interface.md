@@ -175,14 +175,14 @@ As a real example of how a baked in event model contorts UI libraries, let's tak
 
 The issue is fairly long, but I'll try to summarize. Basically, re-frame's state management (ie. subscriptions) and event handling (ie. `dispatch`) rely on global state. It would be great to be able to have multiple re-frame instances running on the same page in straightforward way.
 
-> Except, that means you have to pass frame down through the entire function call tree which is arduous. Really arduous. There's something completely delicious and simple about the use of global dispatch and subscribe, even though it is clearly evil in some ways.
+> Except, that means you have to pass `frame` down through the entire function call tree which is arduous. Really arduous. There's something completely delicious and simple about the use of global dispatch and subscribe, even though it is clearly evil in some ways.
 
 It would be really straightforward for the re-frame library to solve this issue if the event model in the browser was pluggable, but since the event model is baked in, it adds a mountain of incidental complexity. <!-- Conversely, since the event model in `membrane` is pluggable, it would be an easy fix {{footnote}}You can already try membrane's experimental [re-frame integration](https://github.com/phronmophobic/membrane-re-frame-example). Multiple re-frame instances still doesn't quite work since in addition to parameterizing `dispatch` and `subscribe`, there's a few other places `re-frame` relies on global state.{{/footnote}} -->
 
 
 ### Graphics
 
-Displaying program state is a one of the main responsibilities of a user interface. Unfortunately, the graphical building blocks from platform toolkits don't match the building blocks used by designers. You're not going to find a `<div/>` tool in Photoshop or Illustrator. The browser has reasonable support for text and images, but many of the common elements a designer would use either don't exist or are awkward to implement.
+Displaying program state is one of the main responsibilities of a user interface. Unfortunately, the graphical building blocks from platform toolkits don't match the building blocks used by designers. You're not going to find a `<div/>` tool in Photoshop or Illustrator. The browser has reasonable support for text and images, but many of the common elements a designer would use either don't exist or are awkward to implement.
 
 Not only is there a mismatch between the graphical elements used by designers and programmers, it's very common for UI code to use graphical elements that inextricably couple state and events. As an example, consider a checkbox. Is it possible to draw just the checkbox without any of the associated behavior? Are the graphical elements that produce the checkbox able to be extracted and inspected? As with just about every other simple task on the web, the answer is probably "sorta" with a dozen Stack Overflow posts explaining a handful of options that depend on various subtly different circumstances. This is not a great place to be.
 

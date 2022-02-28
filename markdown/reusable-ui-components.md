@@ -143,7 +143,7 @@ Notice that the mouse-down event handler returns the `[:inc-counter]` intent. We
 Now that we verified the intent is returned as expected, we can hook it up to an effect handler.
 
 ```clojure
-;; Using same effect handler in the Effects example
+;; Using the same effect handler in the Effects example
 (def my-counter-effect-handler (make-counter-effect-handler))
 
 (my-counter-effect-handler [:get-count])
@@ -172,7 +172,7 @@ Woohoo! We've built our first stateful component. It's a small victory, but we'v
 
 When the "More!" button is clicked, it returns an `[:inc-counter]` intent, but the problem is that it doesn't say _which_ counter should be incremented. What if there is more than one counter? How would we reuse `counter-ui` for controlling multiple counter instances? 
 
-The `counter-ui` is explicitly being passed the count, `num`, which is the precisely the counter we would want increment. To improve `counter-ui`, we should change the `[:inc-counter]` intent to specify _which_ counter should be incremented. To specify which counter to increment, we need a way to represent a reference to the count passed to `counter-ui`.
+The `counter-ui` is explicitly being passed the count, `num`, which is precisely the counter we would want to increment. To improve `counter-ui`, we should change the `[:inc-counter]` intent to specify _which_ counter should be incremented. To specify which counter to increment, we need a way to represent a reference to the count passed to `counter-ui`.
 
 # References
 
@@ -444,7 +444,7 @@ Since the effect handler is registered globally, fully qualified keywords are hi
 
 The last difference between `defeffect` and `defn` is that an implicit argument, `dispatch!`, is prepended to its argument list. We want to allow effect handlers to define themselves in terms of other effect handlers, but we don't want to directly connect implementations of effect handlers. For example, in development we may want the effect handler for `::notify-user` to print to stdout. In production, dispatching a `::notify-user` effect may send an email or text message. 
 
-The default effect handler uses all of the globally defined effect handlers, but an alternate effect handler that augments, instruments, replaces, or removes effect handlers can be easily be produced and provided as the effect handler for a user interface.
+The default effect handler uses all of the globally defined effect handlers, but an alternate effect handler that augments, instruments, replaces, or removes effect handlers can easily be produced and provided as the effect handler for a user interface.
 
 
 ### Processing Effects With References
@@ -585,7 +585,7 @@ Testing in UI code tends to be less common. It's difficult to break user interfa
 
 The main benefit of just using data and pure functions is that nothing special is required for testing. Testing UI code is just like testing code for any other domain.
 
-A component can be broken into its view function and event function. Events functions are just functions that return intents (ie. data). Crucially, view functions are just functions that return views (ie. data). Based off our work in part I and part II, it's even possible to do generative and property based testing with view functions.
+A component can be broken into its view function and event function. Event functions are just functions that return intents (ie. data). Crucially, view functions are just functions that return views (ie. data). Based off our work in part I and part II, it's even possible to do generative and property based testing with view functions.
 
 Some examples of property based tests that may be interesting for views:
 * Does the view fit within some bounds for all possible inputs?

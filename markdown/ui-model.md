@@ -455,15 +455,15 @@ Functional bubbling allows you to alter intents that are getting passed back up 
 ;; capture all ::add-todo intents bubbling and
 ;; qualify that we're adding a todo to ::work-todos
 (def work-add-todo-button (ui/on ::add-todo (fn []
-                                              [[:add-todo ::work-todos]])
+                                              [[::add-todo ::work-todos]])
                                  add-todo-button))
 
 (def mpos [3 4])
 (ui/mouse-down add-todo-button
-               mpos) ;; [[:add-todo]]
+               mpos) ;; [[::add-todo]]
 
 (ui/mouse-down work-add-todo-button
-               mpos) ;; [[:add-todo ::work-todos]]
+               mpos) ;; [[::add-todo ::work-todos]]
 ```
 
 It may not be completely obvious why functional bubbling is important, but it's a critical technique for making components more reusable.

@@ -476,7 +476,7 @@ It may not be completely obvious why functional bubbling is important, but it's 
 
 For a component to be reusable, it often needs to operate on nested state. Which subset of state can't be known ahead of time and multiple instances of a component may be operating on completely different state or on shared state. The recommended solution proposed by most libraries is to _rewrite_ your component so you can [lift state up](https://reactjs.org/docs/lifting-state-up.html). Membrane contends that components should be reusable by default. Rather than rewriting components to delegate event handling, membrane advocates leveraging functional bubbling.
 
-We'll use the the same temperature converter example from the react tutorial. The basic idea is to create temperature converter widget. In membrane, that might look something like:
+We'll use the the same temperature converter example from the react tutorial. The basic idea is to create a temperature converter widget. In membrane, that might look something like:
 
 ```clojure
 (defn temperature-input [temperature scale]
@@ -537,7 +537,7 @@ Processing events works by invoking callbacks that were set up during initializa
   (repaint! window))
 ```
 
-Look! It's one the event functions, `mouse-event`! Similar to the `view-fn`, `mouse-event` doesn't explicitly get passed state. At this point, it's assumed that any state has been closed over. The event loop doesn't and shouldn't care about how state is handled. It only needs to know what to draw and who to tell about new input events.
+Look! It's one of the event functions, `mouse-event`! Similar to the `view-fn`, `mouse-event` doesn't explicitly get passed state. At this point, it's assumed that any state has been closed over. The event loop doesn't and shouldn't care about how state is handled. It only needs to know what to draw and who to tell about new input events.
 
 # Conclusion
 

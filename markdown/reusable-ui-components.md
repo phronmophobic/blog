@@ -5,7 +5,7 @@ _This post is the third  in a series of posts explaining the design principles b
 Previous posts: [What is a User Interface?](what-is-a-user-interface.html), [Implementing a Functional UI Model](ui-model.html)
 
 
-Feedback is appreciated. Discuss on [reddit](https://www.reddit.com/r/Clojure/comments/lq1os0/reusable_ui_components/) or [github](https://github.com/phronmophobic/membrane/discussions) github.
+Feedback is appreciated. Discuss on [reddit](https://www.reddit.com/r/Clojure/comments/lq1os0/reusable_ui_components/) or [github](https://github.com/phronmophobic/membrane/discussions).
 
 # Introduction
 

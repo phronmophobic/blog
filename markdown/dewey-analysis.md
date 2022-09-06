@@ -21,39 +21,6 @@ There are several tools available for analysis. Projects like cljdoc and [getclo
 
 Out of the 13,591 repositories found by dewey on github, 11,573 (85%) were successfully analyzed. 
 
-<!-- # Seldom used vars in clojure.core -->
-
-<!-- The ecosystem analysis is hot of the presses and is still relatively raw. As such, there are some [biases](#Biases). The goal for this post is to make the analysis publically available and try to gather a few insights among the low hanging fruit. -->
-
-<!-- ## Unused public vars in clojure.core -->
-
-<!-- After analyzing every repo, there 9 public vars in `clojure.core` that are never used: -->
-<!-- * `*suppress-read*` -->
-<!-- * `*allow-unresolved-vars*` -->
-<!-- * `->VecSeq` -->
-<!-- * `->Vec` -->
-<!-- * `proxy-name` -->
-<!-- * `->ArrayChunk` -->
-<!-- * `->VecNode` -->
-<!-- * `*fn-loader*` -->
-<!-- * `get-proxy-class` -->
-
-<!-- Unsurprisingly, most of these vars are undocumented. The only var with a doc string is `get-proxy-class`.  -->
-
-<!-- ## Public vars used once -->
-
-<!-- There are 8 clojure.core public vars used just once: -->
-<!-- * `primitives-classnames` -->
-<!-- * `proxy-mappings` -->
-<!-- * `-cache-protocol-fn` -->
-<!-- * `await1` -->
-<!-- * `inst-ms*` -->
-<!-- * `construct-proxy` -->
-<!-- * `clear-agent-errors` -->
-<!-- * `*reader-resolver*` -->
-
-<!-- Only `proxy-mappings`, `construct-proxy`, and `clear-agent-errors` have docs. Also, `clear-agent-errors` has been deprecated in favor of `restart-agent`. A general theme when exploring the least used vars was that some of the more intricate java interop features are used relatively rarely. My interpretation is that "basic" java interop works most of the time and if a weird javaism is required, then it's usually easier to write a small wrapper in java and do basic interop from there. -->
-
 # Results
 
 The main goal of this project is to make the resulting analyses available for other projects and tools to consume. The full analysis of projects can be found under the [dewey releases](https://github.com/phronmophobic/dewey/releases) in the `analysis.edn.gz` file.
@@ -188,90 +155,6 @@ Truly bananas. Clojure libraries really do have less state. It probably isn't su
 
 
 ## Var Definitions and Macros
-
-<!-- {{vega-count-chart}} -->
-<!-- {:description "Counts by definition type" -->
-<!-- :xlabel "mycount" -->
-<!-- :ylabel "deftype" -->
-<!-- :data -->
-<!-- {clojure.core/defmacro 33004, -->
-<!--  cljs.core/defmulti 2196, -->
-<!--  schema.core/defrecord 504, -->
-<!--  clojure.core/definterface 206, -->
-<!--  clojure.spec.gen.alpha/lazy-prims 44, -->
-<!--  schema.core/def 137, -->
-<!--  cljs.core/goog-define 271, -->
-<!--  clojure.core/defrecord 32796, -->
-<!--  clojure.core/def 170856, -->
-<!--  clojure.core/declare 18480, -->
-<!--  clojure.core/deftype 7582, -->
-<!--  clojure.spec.gen.alpha/lazy-combinators 41, -->
-<!--  cljs.core/defn- 21564, -->
-<!--  clojure.test/deftest 13275, -->
-<!--  cljs.core/defn 167046, -->
-<!--  clojure.core/definline 600, -->
-<!--  cljs.core/def 95154, -->
-<!--  clojure.core.async/defblockingop 6, -->
-<!--  cljs.core/defrecord 7566, -->
-<!--  potemkin/import-vars 3324, -->
-<!--  clojure.core/defmulti 7740, -->
-<!--  cljs.core/declare 6338, -->
-<!--  cljs.core/defonce 4310, -->
-<!--  cljs.core/deftype 3604, -->
-<!--  clojure.core/defn 505621, -->
-<!--  cljs.test/deftest 4276, -->
-<!--  clojure.core/defonce 7033, -->
-<!--  schema.core/defn 7097, -->
-<!--  clojure.core/defn- 86496, -->
-<!--  clojure.core/defprotocol 47201, -->
-<!--  clojure.core.reducers/defcurried 8, -->
-<!--  cljs.core/defmacro 3011} -->
-<!-- } -->
-<!-- {{/vega-count-chart}} -->
-
-<!-- {{vega-count-chart}} -->
-<!-- { -->
-<!-- :sort-field "def count" -->
-<!-- :xlabel "def count" -->
-<!-- :ylabel "def type" -->
-<!-- :data -->
-<!-- [ -->
-
-<!-- [clojure.core/declare 18480] -->
-<!-- [cljs.core/declare 6338] -->
-
-<!--  [clojure.core/def 170856] -->
-<!--  [cljs.core/def 95154] -->
-
-<!--  [clojure.core/definline 600] -->
-<!--  [clojure.core/definterface 206] -->
-
-<!--  [clojure.core/defmacro 33004] -->
-<!--  [cljs.core/defmacro 3011] -->
-
-<!--  [cljs.core/defmulti 2196] -->
-<!--  [clojure.core/defmulti 7740] -->
-
-<!--  [cljs.core/defn 167046] -->
-<!--  [clojure.core/defn 505621] -->
-<!--  [cljs.core/defn- 21564] -->
-<!--  [clojure.core/defn- 86496] -->
-
-<!--  [cljs.core/defonce 4310] -->
-<!--  [clojure.core/defonce 7033] -->
-
-<!--  [clojure.core/defprotocol 47201] -->
-
-<!--  [clojure.core/defrecord 32796] -->
-<!--  [cljs.core/defrecord 7566] -->
-
-
-<!--  [clojure.core/deftype 7582] -->
-<!--  [cljs.core/deftype 3604] -->
-<!-- ] -->
-<!-- } -->
-
-<!-- {{/vega-count-chart}} -->
 
 {{vega-count-chart}}
 {

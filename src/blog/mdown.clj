@@ -625,7 +625,7 @@
 
 (defpost dewey-analysis
   {:id :dewey-analysis
-   :title "Analyzing every clojure project on Github"
+   :title "Analyzing Every Clojure Project on Github"
    ;; :subheading ""
    :vega? true
    :nav [:div {:class "container"}

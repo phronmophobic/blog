@@ -19,7 +19,7 @@ There are several tools available for analysis. Projects like cljdoc and [getclo
 
 **Analysis Rate**: 85%
 
-Out of the 13,591 repositories found by dewey on github, 11,573 (85%) were successfully analyzed. 
+Out of the 13,591 repositories found by dewey on github, 11,573 (85%) were successfully{{footnote}}Success means that a non-empty analysis was produced. A "failure" is any repository that didn't produce a non-empty analysis. Some example failures: 1) Nine github libraries were ignored because they were two big. 2) I think most failures were due to not finding a project file (only deps.edn and project.clj supported). 3) Failure to interpret a project file (eg. malformed edn, lein errors, lein hangs). 4) etc.{{/footnote}} analyzed.
 
 # Results
 

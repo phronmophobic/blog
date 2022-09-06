@@ -1,16 +1,18 @@
 (ns blog.mdown
   (:require [clojure.zip :as z]
+            [clojure.data.json :as json]
             [membrane.ui :as ui
              :refer [horizontal-layout
                      vertical-layout
                      spacer
                      on]]
-            [membrane.skia :as skia]
+            ;; [membrane.skia :as skia]
             [membrane.component :refer [defui defeffect]
              :as component]
             [membrane.basic-components :as basic
              :refer [textarea checkbox]]
             [glow.core :as glow]
+            clojure.edn
             glow.parse
             glow.html
             [glow.colorschemes]
@@ -22,7 +24,8 @@
            com.vladsch.flexmark.ext.attributes.AttributesExtension
            com.vladsch.flexmark.ext.xwiki.macros.MacroExtension
            com.vladsch.flexmark.util.data.MutableDataSet
-           com.phronemophobic.blog.HiccupNode))
+           com.phronemophobic.blog.HiccupNode
+           java.text.DecimalFormat))
 
 
 ;; //options.set(Parser.EXTENSIONS, Arrays.asList(TablesExtension.create(), StrikethroughExtension.create()));
@@ -64,13 +67,14 @@
 
 (declare hiccup-node)
 
-(defmulti macroexpand1-doc
-  (fn [m]
-    (if (instance? com.vladsch.flexmark.ext.xwiki.macros.Macro m)
-      (.getName m)
-      (if (instance? com.vladsch.flexmark.ext.xwiki.macros.MacroBlock m)
-        (.getName (.getMacroNode m))
-        (type m)))))
+(defn macro-type [m]
+  (if (instance? com.vladsch.flexmark.ext.xwiki.macros.Macro m)
+    (.getName m)
+    (if (instance? com.vladsch.flexmark.ext.xwiki.macros.MacroBlock m)
+      (.getName (.getMacroNode m))
+      (type m))))
+
+(defmulti macroexpand1-doc macro-type)
 
 (defmethod macroexpand1-doc :default [node]
   node)
@@ -358,9 +362,7 @@
 ;;     [:ol.list-group (map blog-html (children this))]))
 ;; com.vladsch.flexmark.ast.BulletList
 
-(defmulti markdown-macro (fn [macro]
-                           (.getName macro)))
-
+(defmulti markdown-macro macro-type)
 
 (defmethod markdown-macro "tableflip" [macro]
   [:p {:title "table flip"} "(╯°□°）╯︵ ┻━┻"])
@@ -368,6 +370,18 @@
 (defmethod markdown-macro "blockquote-footer" [macro]
   [:footer.blockquote-footer
    (map blog-html (drop-last (children macro)))])
+
+(defmethod markdown-macro "tooltip" [macro]
+  (let [tooltip-text-macro (->> (children macro)
+                                  (some #(= "tooltip-text" (macro-type %))))
+        tooltip-text (get (.getAttributes macro) "text")
+        childs (->> (children macro)
+                    (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.MacroAttribute %))
+                    (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.MacroClose %))
+                    (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.Macro %)))]
+    (assert tooltip-text "Tooltip requires a text attribute. {{tooltip text='asdf'}}...")
+    [:span {:title tooltip-text}
+     (map blog-html childs)]))
 
 (defmethod markdown-macro "contemplation-break" [macro]
   [:div {:style "width: 90%;height: 500px;border-top: #c4c4c4 1px solid;border-bottom: #c4c4c4 1px solid;margin-bottom:30px;"
@@ -390,15 +404,101 @@
                     (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.Macro %)))]
     (hiccup/h (clojure.string/join (map #(.getChars %) childs)))))
 
-;; (defmethod markdown-macro "footnote" [macro]
-;;   (let [idx ]
-;;     [:a {:href "#"}
-;;      (hiccup/h (str "[" idx "]"))]))
 
-;; (defmethod markdown-macro "footnotes" [macro]
-;;   "Footnotes!"
-;;   )
+(defmethod markdown-macro "vega-embed" [macro]
+  (let [childs (->> (children macro)
+                    (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.MacroClose %))
+                    (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.Macro %)))
+        viz-id (gensym "viz_")]
+    (str "
+<div id=\"" viz-id "\"></div>
+  <script type=\"text/javascript\">
+      var yourVlSpec_" viz-id " = " (clojure.string/join (map #(.getChars %) childs))
+         ";
+      vegaEmbed('#"viz-id "', yourVlSpec_" viz-id ", {actions: false});
+    </script>")))
 
+(defmethod markdown-macro "vega-embed-edn" [macro]
+  (let [childs (->> (children macro)
+                    (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.MacroClose %))
+                    (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.Macro %)))
+        viz-id (gensym "viz_")
+
+        edn-str (clojure.string/join (map #(.getChars %) childs))
+        edn (clojure.edn/read-string edn-str)
+        vega-spec-json (json/write-str edn)]
+    (str "
+<div id=\"" viz-id "\"></div>
+  <script type=\"text/javascript\">
+      var yourVlSpec_" viz-id " = " vega-spec-json
+         ";
+      vegaEmbed('#"viz-id "', yourVlSpec_" viz-id ", {actions: false});
+    </script>")))
+
+(def two-decimal-format (DecimalFormat. "#.##"))
+(defmethod markdown-macro "vega-count-chart" [macro]
+  (let [childs (->> (children macro)
+                    (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.MacroClose %))
+                    (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.Macro %)))
+        edn-str (clojure.string/join (map #(.getChars %) childs))
+        {:keys [xlabel
+                ylabel
+                sort-field
+                description
+                data]
+         :as edn} (clojure.edn/read-string edn-str)
+        label-prop (str xlabel " str")
+
+        vega-spec {
+                   "$schema" "https://vega.github.io/schema/vega-lite/v5.json",
+                   "description" description
+                   "data" 
+                   {"values" (for [[i [k v]] (map-indexed vector (:data edn))]
+                               {"_index" i
+                                xlabel v
+                                label-prop (if (integer? v)
+                                             (format "%,d" v)
+                                             (.format two-decimal-format v))
+                                ylabel (str k)})
+                    },
+                   "layer" [{
+                             "mark" "bar"
+                             },
+                            {
+                             "mark" {
+                                     "type" "text",
+                                     "align" "left",
+                                     "baseline" "middle",
+                                     "dx" 3
+                                     },
+                             "encoding" {
+                                         "text" {"field" label-prop, "type" "nominal"}
+                                         }
+                             }],
+
+                   "encoding" {
+                               "x" {"field" xlabel, "type" "quantitative", },
+                               ,
+                               "y" (merge
+                                    {"field" ylabel, "type" "nominal"}
+                                    (if sort-field
+                                      {"sort" {"field" sort-field
+                                               "op" "max"}}
+                                      {"sort" {"field" "_index"
+                                               "op" "max"}}))
+                               }
+                   }
+
+        vega-spec-json (json/write-str vega-spec)
+
+        viz-id (gensym "viz_")]
+    (str "
+<div id=\"" viz-id "\"></div>
+  <script type=\"text/javascript\">
+      var yourVlSpec_" viz-id " = " vega-spec-json
+         ";
+      vegaEmbed('#"viz-id "', yourVlSpec_" viz-id ", {actions: false});
+    </script>")))
 
 
 (extend-type com.vladsch.flexmark.ext.xwiki.macros.Macro
@@ -409,7 +509,8 @@
 (extend-type com.vladsch.flexmark.ext.xwiki.macros.MacroBlock
   IBlogHtml
   (blog-html [this]
-    (markdown-macro (.getMacroNode this))))
+    (markdown-macro this
+                    #_(.getMacroNode this))))
 
 
 (extend-type com.vladsch.flexmark.ast.ThematicBreak
@@ -428,7 +529,8 @@
                          nav
                          src
                          body
-                         asset-prefix]
+                         asset-prefix
+                         vega?]
                   :as post}]
   (let [body (if body
                body
@@ -445,6 +547,13 @@
       [:link {:rel "icon"
               :href (str asset-prefix "favicon.ico")}]
       [:title title]
+
+
+      (when vega?
+        (for [src ["https://cdn.jsdelivr.net/npm/vega@5.22.1"
+                   "https://cdn.jsdelivr.net/npm/vega-lite@5.5.0"
+                   "https://cdn.jsdelivr.net/npm/vega-embed@6.21.0"]]
+          [:script {:src src}]))
 
       [:link {:href (str asset-prefix "bootstrap.min.css")
               :rel "stylesheet"}]

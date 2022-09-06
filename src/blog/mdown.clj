@@ -623,6 +623,19 @@
    :src "markdown/functional-ui.md"
    :out "functional-ui.html"})
 
+(defpost dewey-analysis
+  {:id :dewey-analysis
+   :title "Analyzing every clojure project on Github"
+   ;; :subheading ""
+   :vega? true
+   :nav [:div {:class "container"}
+         [:nav.nav.blog-nav
+          [:a.nav-link
+           {:href "/"}
+           "Home"]]]
+   :asset-prefix "dewey-analysis/"
+   :src "markdown/dewey-analysis.md"
+   :out "dewey-analysis.html"})
 
 (defpost what-is-a-ui
   {:id :what-is-a-ui

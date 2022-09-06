@@ -2,7 +2,7 @@
 
 # Introduction
 
-I'm generally interested in tools like [cljdoc](https://cljdoc.org/) that work at the ecosystem level. As part of my work on [dewey](https://github.com/phronmophobic/dewey), which aims to be an index of all clojure libraries on github, I thought it would be a straightforward extension to statically analyze all the projects found. A bare, shallow checkout of every clojure project found by dewey{{footnote}}Nine projects were excluded because they are ginormous by themselves.{{/footnote}} is only about 14GB, which is a very tractable size.
+I'm generally interested in tools like [cljdoc](https://cljdoc.org/) that work at the ecosystem level. As part of my work on [dewey](https://github.com/phronmophobic/dewey), which builds an index of all clojure libraries on github, I thought it would be a straightforward extension to statically analyze all the projects found. A bare, shallow checkout of every clojure project found by dewey{{footnote}}Nine projects were excluded because they are ginormous by themselves.{{/footnote}} is only about 14GB, which is a very tractable size.
 
 There's also a couple of features of the clojure ecosystem that make it an interesting target for wholesale analysis:
 * libraries address a wide range of problems
@@ -420,7 +420,7 @@ user> (+ 😊 😊)
 84
 ```
 
-I'm not saying it's a good idea. Anyway, there are 25 brave repositories that use emoji/unicode in var definition names. There's a single namespace that includes unicode.
+I'm not saying it's a good idea. Anyway, there are 25 brave repositories that use emoji/unicode in var definition names. There is a single namespace that includes unicode.
 
 Usages range from [questionable](https://github.com/adereth/unicode-math) to [╯°□°╯ ┻━┻](https://github.com/jstepien/flip).
 
@@ -437,7 +437,9 @@ Most of these biases are pretty straightforward to account for and will hopefull
 
 # Future Work
 
-If given the choice, system optimal beats user optimal every time, but it can difficult to align incentives due to the tragedy of the commons. Most language ecosystems have figured out that directly supporting community repositories/tools like clojars is a big win. Based on some smart design choices by clojure, its maintainers, and the community, I think that clojure is well positioned to take advantage of tools that work at the ecosystem level. I'm not totally sure what other ecosystem tools look like, but I have some ideas.
+Most language ecosystems have figured out that directly supporting community repositories/tools like clojars is a big win. Based on some smart design choices by clojure, its maintainers, and the community, I think that clojure is well positioned to take advantage of tools that work at the ecosystem level. I'm not totally sure what other ecosystem tools look like, but I have some ideas.
+
+## Mundane Improvements
 
 While the vision is to work on innovative ecosystem tooling, many of the planned improvements are mundane:
 * crawl other open-source hosts besides github
@@ -447,7 +449,7 @@ While the vision is to work on innovative ecosystem tooling, many of the planned
 
 ## Use a database
 
-Currently, the full analysis of every clojure repository is made available as a giant 600+ MB gzipped edn file. It would be great to make the data available in a more organized, structured, and queryable way (like a database).
+Currently, the full analysis of every clojure repository is made available as a giant 600+ MB gzipped edn file. It would be great to make the data available in a more organized, structured, and queryable format (like a database).
 
 ## Example Usages
 
@@ -470,7 +472,7 @@ Afaict, specs are designed with a global, universal orientation in mind. We shou
 > In the fields of computational linguistics and probability, an n-gram (sometimes also called Q-gram) is a contiguous sequence of n items from a given sample of text or speech.
 > {{blockquote-footer}}[N-grams Wikipedia](https://en.wikipedia.org/wiki/N-gram){{/blockquote-footer}}
 
-I'm not exactly sure what I'd expect to find, but it would be interesting to find common patterns in clojure code.
+I'm not exactly sure what I'd expect to find, but it would be interesting to find common patterns and idioms in clojure code.
 
 ## Namespace Alias usage
 

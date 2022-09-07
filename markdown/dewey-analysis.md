@@ -478,6 +478,11 @@ I'm not exactly sure what I'd expect to find, but it would be interesting to fin
 
 It's common to use an alias when requiring a namespace. Since aliases are short, it's easy for multiple libraries to "claim" the same alias. I'd like to build a database of all namespace alias usage so that it's easier to pick a preferred alias for your library that is less likely to conflict. This is probably a dumb idea, but at least it's an easy dumb idea.
 
+# Related Work
+
+* [100 Most Used Clojure Expressions](https://ericnormand.me/article/100-most-used-clojure-expressions)
+* [getclojure](https://github.com/devn/getclojure)
+* [crossclj](https://github.com/fbellomi/crossclj)
 
 # Footnotes
 

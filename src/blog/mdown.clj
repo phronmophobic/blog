@@ -492,13 +492,14 @@
         vega-spec-json (json/write-str vega-spec)
 
         viz-id (gensym "viz_")]
-    (str "
+    [:div {:style "width:100%;overflow:scroll;"}
+     (str "
 <div id=\"" viz-id "\"></div>
   <script type=\"text/javascript\">
       var yourVlSpec_" viz-id " = " vega-spec-json
-         ";
+          ";
       vegaEmbed('#"viz-id "', yourVlSpec_" viz-id ", {actions: false});
-    </script>")))
+    </script>")]))
 
 
 (extend-type com.vladsch.flexmark.ext.xwiki.macros.Macro

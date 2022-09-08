@@ -1,5 +1,10 @@
 {{table-of-contents/}}
 
+Posted: September 6th, 2022
+**Update**: September 7th, 2022. Added [Failed Analyses](http://localhost:8000/dewey-analysis.html#Failed-Analyses) section and fixed total repository count.
+
+_See [source](https://github.com/phronmophobic/blog/blob/master/markdown/dewey-analysis.md) for full history._
+
 # Introduction
 
 I'm generally interested in tools like [cljdoc](https://cljdoc.org/) that work at the ecosystem level. As part of my work on [dewey](https://github.com/phronmophobic/dewey), which builds an index of all clojure libraries on github, I thought it would be a straightforward extension to statically analyze all the projects found. A bare, shallow checkout of every clojure project found by dewey{{footnote}}Nine projects were excluded because they are ginormous by themselves.{{/footnote}} is only about 14GB, which is a very tractable size.
@@ -17,9 +22,9 @@ There are several tools available for analysis. Projects like cljdoc and [getclo
 * keywords
 * protocol implementations
 
-**Analysis Rate**: 85%
+**Analysis Rate**: 87%
 
-Out of the 13,591 repositories found by dewey on github, 11,573 (85%) were successfully{{footnote}}Success means that a non-empty analysis was produced. A "failure" is any repository that didn't produce a non-empty analysis. Some example failures: 1) Nine github libraries were ignored because they were two big. 2) I think most failures were due to not finding a project file (only deps.edn and project.clj supported). 3) Failure to interpret a project file (eg. malformed edn, lein errors, lein hangs). 4) etc.{{/footnote}} analyzed.
+Out of the 13,274 repositories found by dewey on github, 11,573 (87%) were successfully{{footnote}}Success means that a non-empty analysis was produced. A "failure" is any repository that didn't produce a non-empty analysis. Some example failures: 1) Nine github libraries were ignored because they were two big. 2) I think most failures were due to not finding a project file (only deps.edn and project.clj supported). 3) Failure to interpret a project file (eg. malformed edn, lein errors, lein hangs). 4) etc.{{/footnote}} analyzed.
 
 # Results
 
@@ -424,6 +429,41 @@ I'm not saying it's a good idea. Anyway, there are 25 brave repositories that us
 
 Usages range from [questionable](https://github.com/adereth/unicode-math) to [╯°□°╯ ┻━┻](https://github.com/jstepien/flip).
 
+# Failed Analyses
+
+For the 13% of repositories that aren't included, what went wrong?
+
+{{vega-count-chart}}
+{:sort-field "count"
+ :xlabel "count"
+ :ylabel "fail type"
+ :data
+
+{:empty-analyses 1398,
+ :max-bytes-limit-exceeded 31,
+ "java.lang.RuntimeException" 45,
+ "java.lang.IllegalArgumentException" 12,
+ "java.lang.NumberFormatException" 2,
+ "java.util.concurrent.ExecutionException" 2,
+ :download-error 10,
+ "java.lang.OutOfMemoryError" 62,
+ "java.lang.InterruptedException" 4,
+ :no-findings 128,
+ "java.lang.ThreadDeath" 1,
+ :read-error 6}
+}
+{{/vega-count-chart}}
+
+In the future, I'd like to do a better job of breaking down what errors happened during analysis, but here's the coarse breakdown for now.
+
+Descriptions:
+* `:empty-analyses`: No analysis was produced. The most common (only?) reason is that no project files were found (only deps.edn and project.clj supported).
+* `:no-findings`: Analysis succeeded without error, but no findings were found. In theory, this could mean that everything worked and there was just nothing to analyze, but I'm assuming that it's an error for now.
+* various Exceptions: Exceptions thrown while trying to analyze a project.
+* `:max-bytes-limit-exceeded`: Repository checkout was over file size limit (currently 100Mb).
+* `:download-error`: An exception was thrown while trying to download the repository from github.
+* `:read-error`: Analyses for each repository were saved to intermediate files before being aggregated. This error means the resulting analysis file was unreadable.
+
 # Biases
 
 I guess I wouldn't say the data is biased so much as unrefined. I tried simply looking at the "most popular X" among usages, but you get misleading results if you don't account for biases like:
@@ -431,7 +471,7 @@ I guess I wouldn't say the data is biased so much as unrefined. I tried simply l
 * outliers: a single or small number of repositories that do "weird" things can skew simple counts and averages
 * copy and pasting: for a number reasons, shared code is sometimes added to a repository by copy and pasting the code into a library rather than referencing the code as a dependency.
 * example and test code: test/example code can often exhibit very different usage patterns than "normal" code.
-* failed analyses: around ~85% of repositories were successfully analyzed. That's not terrible, but the 15% of libraries that failed to produce analysis probably aren't uncorrelated which can introduce biases.
+* failed analyses: around ~87% of repositories were successfully analyzed. That's not terrible, but the 13% of libraries that failed to produce analysis probably aren't uncorrelated which can introduce biases.
 
 Most of these biases are pretty straightforward to account for and will hopefully be addressed in future work.
 

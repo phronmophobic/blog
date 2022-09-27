@@ -207,7 +207,7 @@ That's it. In all fairness, these are the most important operations. It's possib
 
 # Recap
 
-A user interface is a plane surface that forms the common boundary between a user and an application. A fully functional user interface defines an interface using two pure functions, the the event function and the view function. The goal is build complex user interfaces by composing simpler user interfaces.
+A user interface is a plane surface that forms the common boundary between a user and an application. A fully functional user interface defines an interface using two pure functions, the event function and the view function. The goal is build complex user interfaces by composing simpler user interfaces.
 
 # To Be Continued...
 

@@ -651,6 +651,34 @@
    :src "markdown/dewey-analysis.md"
    :out "dewey-analysis.html"})
 
+(defpost clojure-plays-mario
+  {:id :mairio
+   :title "Clojure Plays Mario"
+   ;; :subheading ""
+   :vega? false
+   :nav [:div {:class "container"}
+         [:nav.nav.blog-nav
+          [:a.nav-link
+           {:href "/"}
+           "Home"]]]
+   :asset-prefix "mairio/"
+   :src "markdown/mairio.md"
+   :out "mairio.html"})
+
+(defpost membrane-topics
+  {:id :membrane-topics
+   :title "Membrane Topics"
+   ;; :subheading ""
+   :vega? false
+   :index? false
+   :nav [:div {:class "container"}
+         [:nav.nav.blog-nav
+          [:a.nav-link {:href "https://github.com/phronmophobic/membrane"}
+           "Membrane Github"]]]
+   :asset-prefix "membrane-topics/"
+   :src "/Users/adrian/workspace/membrane2/docs/topics.md"
+   :out "/Users/adrian/workspace/membrane2/docs/membrane-topics.html"})
+
 (defpost what-is-a-ui
   {:id :what-is-a-ui
    :title "What is a User Interface?"

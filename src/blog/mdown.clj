@@ -731,8 +731,11 @@
                             out]
                      :as post}]
   (let [page-html (blog-page post)
-        html-str (html page-html)]
-    (spit (str "resources/public/" (:out post)) html-str)))
+        html-str (html page-html)
+        out-path (if (str/starts-with? out "/")
+                   out
+                   (io/file "resources" "public" out))]
+    (spit out-path html-str)))
 
 (defonce running? (atom false))
 (defn watch-blog [post-id]
@@ -766,7 +769,8 @@
   (let [page-html (blog-page
                    {:title "Phronemophobic's Blog"
                     :body [:div
-                           (for [post (vals @POSTS)]
+                           (for [post (vals @POSTS)
+                                 :when (get post :index? true)]
                              [:div
                               [:a {:href (:out post)}
                                (:title post)]])]

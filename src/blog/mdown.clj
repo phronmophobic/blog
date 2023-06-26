@@ -11,8 +11,10 @@
              :as component]
             [membrane.basic-components :as basic
              :refer [textarea checkbox]]
+            [clojure.java.io :as io]
             [glow.core :as glow]
             clojure.edn
+            [clojure.string :as str]
             glow.parse
             glow.html
             [glow.colorschemes]
@@ -417,6 +419,17 @@
          ";
       vegaEmbed('#"viz-id "', yourVlSpec_" viz-id ", {actions: false});
     </script>")))
+
+(defmethod markdown-macro "video" [macro]
+  (let [childs (->> (children macro)
+                    (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.MacroClose %))
+                    (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.Macro %)))
+        src (clojure.string/join (map #(.getChars %) childs))]
+    (str
+     "<p><video controls preload=\"none\">
+  <source src=\""src "\" type=\"video/mp4\" />
+</video></p>")))
+
 
 (defmethod markdown-macro "vega-embed-edn" [macro]
   (let [childs (->> (children macro)

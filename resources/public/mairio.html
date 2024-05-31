@@ -1,0 +1,243 @@
+<html lang="en"><head><meta charset="utf-8" /><meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport" /><meta content="Adrian Smith" name="author" /><link href="mairio/favicon.ico" rel="icon" /><title>Clojure Plays Mario</title><link href="mairio/bootstrap.min.css" rel="stylesheet" /><link href="mairio/blog.css" rel="stylesheet" /><style type="text/css">.syntax pre {
+  background: ;
+}
+
+.syntax pre .definition {
+  color: #00f;
+}
+
+.syntax pre .core-fn {
+  color: #30a;
+}
+
+.syntax pre .variable {
+  color: black;
+}
+
+.syntax pre .number {
+  color: #164;
+}
+
+.syntax pre .s-exp {
+  color: #997;
+}
+
+.syntax pre .special-form {
+  color: #30a;
+}
+
+.syntax pre .string {
+  color: #a11;
+}
+
+.syntax pre .keyword {
+  color: #708;
+}
+
+.syntax pre .macro {
+  color: #05a;
+}
+
+.syntax pre .reader-char {
+  color: #555;
+}
+
+.syntax pre .nil {
+  color: #164;
+}
+
+.syntax pre .comment {
+  color: #a50;
+}
+
+.syntax pre .repeat {
+  color: #f00;
+}
+
+.syntax pre .regex {
+  color: #f50;
+}
+
+.syntax pre .exception {
+  color: #f00;
+}
+
+.syntax pre .boolean {
+  color: #164;
+}
+
+.syntax pre .character {
+  color: #f50;
+}
+
+.syntax pre .conditional {
+  color: #30a;
+} div.syntax { padding: 4px ; background-color: #f8f8f8; margin-bottom: 18px } div.syntax pre { margin-bottom: 0 }</style></head><body><div class="blog-masthead"><div class="container"><nav class="nav blog-nav"><a class="nav-link" href="/">Home</a></nav></div></div><div class="blog-header"><div class="container"><h1 class="blog-title">Clojure Plays Mario</h1><p class="lead blog-description"></p></div></div><div class="container"><div class="row"><div class="col-sm-8 blog-main"><div class="blog-post"><div><p>Date: June 22nd, 2023</p><h1 id="Introduction">Introduction</h1><p>Before getting too far into the weeds, let&apos;s begin with the results. Without too much effort, an AI was written in clojure that could complete all of the levels in the original Super Mario Bros for the NES except for the Bowser levels that have mazes. Namely, levels 4-4, 7-4, and 8-4 were not completed (more on this later).</p><p>Here&apos;s what a solved level looks like:</p>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-8-3.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<p>Yup. It&apos;s just Mario casually completing the level without any mortal fear and complete disregard for contrivances like mushrooms, coins, or points.</p><h1 id="Implementation">Implementation</h1><p>The main part of the implementation is the following <code>solve</code> function which we will break down.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="definition">defn</span> <span class="symbol">solve</span>
+  <span class="string">&quot;Given a `start` state, a distance estimating function,
+  a `successors` function, and a function that says when we&apos;re `done`,
+  Try to find a path from the start to the solution.&quot;</span>
+  <span class="s-exp">(</span><span class="s-exp">[</span><span class="symbol">start</span> <span class="symbol">dist</span> <span class="symbol">successors</span> <span class="symbol">done?</span><span class="s-exp">]</span>
+   <span class="s-exp">(</span><span class="symbol">solve</span> <span class="s-exp">(</span><span class="symbol">priority-map</span> <span class="symbol">start</span> <span class="s-exp">(</span><span class="symbol">dist</span> <span class="symbol">start</span><span class="s-exp">)</span><span class="s-exp">)</span>
+          <span class="symbol">dist</span>
+          <span class="symbol">successors</span>
+          <span class="symbol">done?</span>
+          <span class="s-exp">#{</span><span class="symbol">start</span><span class="s-exp">}</span><span class="s-exp">)</span><span class="s-exp">)</span>
+  <span class="s-exp">(</span><span class="s-exp">[</span><span class="symbol">queue</span> <span class="symbol">distf</span> <span class="symbol">successorsf</span> <span class="symbol">done?</span> <span class="symbol">visited</span><span class="s-exp">]</span>
+   <span class="s-exp">(</span><span class="special-form">if</span> <span class="s-exp">(</span><span class="core-fn">not</span> <span class="s-exp">(</span><span class="symbol">Thread/interrupted</span><span class="s-exp">)</span><span class="s-exp">)</span>
+     <span class="s-exp">(</span><span class="conditional">when-let</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="symbol">node</span> <span class="symbol">dist</span><span class="s-exp">]</span>
+                <span class="s-exp">(</span><span class="symbol">with-lookback</span> <span class="symbol">queue</span> <span class="s-exp">(</span><span class="symbol">-&gt;coord</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">]</span>
+       <span class="s-exp">(</span><span class="special-form">let</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="symbol">not-done?</span> <span class="symbol">dead?</span> <span class="symbol">below-viewport?</span> <span class="symbol">xpos</span> <span class="symbol">speed</span> <span class="symbol">frames</span><span class="s-exp">]</span> <span class="symbol">dist</span><span class="s-exp">]</span>
+        <span class="s-exp">(</span><span class="core-fn">swap!</span> <span class="symbol">stats</span>
+               <span class="core-fn">assoc</span>
+               <span class="keyword">:queue-count</span> <span class="s-exp">(</span><span class="core-fn">count</span> <span class="symbol">queue</span><span class="s-exp">)</span>
+               <span class="keyword">:dist</span> <span class="symbol">dist</span><span class="s-exp">)</span><span class="s-exp">)</span>
+       <span class="s-exp">(</span><span class="special-form">if</span> <span class="s-exp">(</span><span class="symbol">done?</span> <span class="symbol">dist</span><span class="s-exp">)</span>
+         <span class="symbol">node</span>
+         <span class="s-exp">(</span><span class="special-form">let</span> <span class="s-exp">[</span><span class="symbol">successors</span> <span class="s-exp">(</span><span class="symbol">successorsf</span> <span class="symbol">node</span><span class="s-exp">)</span>
+               <span class="symbol">queue</span> <span class="s-exp">(</span><span class="macro">-&gt;</span> <span class="symbol">queue</span>
+                         <span class="s-exp">(</span><span class="core-fn">into</span> <span class="s-exp">(</span><span class="macro">for</span> <span class="s-exp">[</span><span class="symbol">successor</span> <span class="symbol">successors</span>
+                                     <span class="keyword">:when</span> <span class="s-exp">(</span><span class="core-fn">not</span> <span class="s-exp">(</span><span class="core-fn">contains?</span> <span class="symbol">visited</span> <span class="symbol">successor</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">]</span>
+                                 <span class="s-exp">[</span><span class="symbol">successor</span> <span class="s-exp">(</span><span class="symbol">distf</span> <span class="symbol">successor</span><span class="s-exp">)</span><span class="s-exp">]</span><span class="s-exp">)</span><span class="s-exp">)</span>
+                         <span class="s-exp">(</span><span class="core-fn">dissoc</span> <span class="symbol">node</span><span class="s-exp">)</span><span class="s-exp">)</span>
+               <span class="symbol">visited</span> <span class="s-exp">(</span><span class="core-fn">into</span> <span class="symbol">visited</span> <span class="symbol">successors</span><span class="s-exp">)</span><span class="s-exp">]</span>
+           <span class="s-exp">(</span><span class="special-form">recur</span> <span class="symbol">queue</span>
+                  <span class="symbol">distf</span>
+                  <span class="symbol">successorsf</span>
+                  <span class="symbol">done?</span>
+                  <span class="symbol">visited</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+     <span class="s-exp">{</span><span class="keyword">:fail</span> <span class="boolean">true</span>
+      <span class="keyword">:queue</span> <span class="symbol">queue</span>
+      <span class="keyword">:visited</span> <span class="symbol">visited</span><span class="s-exp">}</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+</pre></div><p>There&apos;s a few extra steps we&apos;ll ignore, but the main steps are:</p><ol><li><p>If we&apos;re done, return the result.</p></li><li><p>Otherwise, choose a node to explore.</p></li><li><p>Derive new nodes (ie. successors) from the node we picked.</p></li><li><p><code>recur</code> back to the beginning and try again.</p></li></ol><p>That&apos;s basically it. The only real magic is deciding where to explore. Usually, you want to be &quot;greedy&quot; and just explore closest to your goal, but if you&apos;re too greedy, then you might get stuck with no way to continue to greedily move forward.</p><p><img alt="Mario stuck in a location where he needs to backtrack to continue." src="mairio/stuck.png" style="max-width: 90vw;height:auto" /></p><p>In this scenario, you need to backtrack to a previous state that does allow you to progress. The node is chosen using the <code>with-lookback</code> function:</p><div class="syntax"><pre><span class="s-exp">(</span><span class="conditional">when-let</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="symbol">node</span> <span class="symbol">dist</span><span class="s-exp">]</span>
+           <span class="s-exp">(</span><span class="symbol">with-lookback</span> <span class="symbol">queue</span> <span class="s-exp">(</span><span class="symbol">-&gt;coord</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">]</span>
+  <span class="symbol">...</span><span class="s-exp">)</span>
+</pre></div><p>The <code>with-lookback</code> function picks a random distance between 0 and <code>(-&gt;coord 1 0 0)</code> , and picks the &quot;best&quot; exploration so far that is at least that many units away from the farthest exploration. What distance does <code>(-&gt;coord 1 0 0)</code> represent? I won&apos;t cover too much about Super Mario Bros&apos; coordinate system, but <code>(-&gt;coord 1 0 0)</code> translates to exactly one screen&apos;s distance. Essentially, our algorithm can backtrack up to one screen from our furthest exploration.</p><p>Revisiting the levels the AI could not complete (ie. 4-4, 7-4, and 8-4). All of these levels have a maze mechanic where if you go the wrong route, then you will be transported back 4 screens. Since getting transported 4 screens back is beyond the horizon of our backtracking, there&apos;s no way our algorithm will ever complete these levels unless they get lucky and choose the correct path on the first try.<sup><a href="#footnote-1" name="footnote-ref-1" title="They were not so lucky.">1</a></sup></p><p>Here&apos;s what the process looks like. Below is the sequence of exploring using our solver. You can see each alternate reality explored and how the solver slowly progresses towards the end of the level. It takes a while for Mario to figure out he has to jump up onto each ledge and over the goomba, but he eventually figures it out and proceeds onto the next obstacle.</p>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/solver.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<p>So yea. The solver is relatively straightforward. Randomly press buttons until you make it to the end of the level. If you get stuck, use save states to backtrack.</p><p>It&apos;s not super efficient, but it usually doesn&apos;t take too long to &quot;solve&quot; a level and it&apos;s kinda fun to watch it go. For reference, it takes about two minutes to solve level 1-1. Some of the platforming levels take a bit longer. The two water levels (ie. 2-2, 7-2) have the same layout and take quite a while to solve. Our AI is not a good swimmer.</p><h2 id="Successors">Successors</h2><p>Emulating the next state from our current step is pretty straightforward. We generate all combinations of pressing or not pressing the A and B buttons along with all the combinations of pressing left, right, or no direction. For each particular combination, we pick a random number of frames in the range 1-60 (up to one second) to hold this configuration and then simulate the result. It&apos;s important for our successor function to generate button presses for several frames because a common platforming action is long jumping (ie. holding the jump button for a full jump). If successor states were generated for each frame, then the common action of holding the jump button for a few seconds is extremely unlikely.</p><p>While it&apos;s possible for Mario to enter a pipe by pressing down, we ignore that for our purposes. I&apos;m not sure the up button has any use in Super Mario Bros so we also ignore that button when generating successor states.</p><p>Below is the code for generating the successor states with some debug code elided for brevity.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">buttons</span>
+  <span class="s-exp">[</span><span class="keyword">:RETRO_DEVICE_ID_JOYPAD_A</span>
+   <span class="keyword">:RETRO_DEVICE_ID_JOYPAD_B</span><span class="s-exp">]</span><span class="s-exp">)</span>
+<span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">directions</span>
+  <span class="s-exp">[</span><span class="keyword">:RETRO_DEVICE_ID_JOYPAD_LEFT</span>
+   <span class="keyword">:RETRO_DEVICE_ID_JOYPAD_RIGHT</span>
+   <span class="nil">nil</span><span class="s-exp">]</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="definition">defn</span> <span class="reader-char">^</span><span class="keyword">:private</span> <span class="symbol">next-state</span>
+  <span class="string">&quot;Given a sequence of past inputs, run the current game for `num-frames` with `controls` inputs set.&quot;</span>
+  <span class="s-exp">[</span><span class="symbol">inputs</span> <span class="symbol">controls</span> <span class="symbol">num-frames</span><span class="s-exp">]</span>
+  <span class="s-exp">(</span><span class="special-form">let</span> <span class="s-exp">[</span><span class="symbol">state</span> <span class="s-exp">(</span><span class="core-fn">get</span> <span class="reader-char">@</span><span class="symbol">state-cache</span> <span class="symbol">inputs</span><span class="s-exp">)</span><span class="s-exp">]</span>
+    <span class="s-exp">(</span><span class="macro">assert</span> <span class="symbol">state</span><span class="s-exp">)</span>
+    <span class="s-exp">(</span><span class="symbol">load-state</span> <span class="symbol">state</span><span class="s-exp">)</span><span class="s-exp">)</span>
+  <span class="s-exp">(</span><span class="macro">with-redefs</span> <span class="s-exp">[</span><span class="symbol">input-state-callback</span>
+                <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">port</span> <span class="symbol">device</span> <span class="symbol">index</span> <span class="symbol">id</span><span class="s-exp">]</span>
+                  <span class="s-exp">(</span><span class="special-form">if</span> <span class="s-exp">(</span><span class="symbol">controls</span> <span class="s-exp">(</span><span class="symbol">c/device-name</span> <span class="symbol">id</span><span class="s-exp">)</span><span class="s-exp">)</span>
+                    <span class="number">1</span>
+                    <span class="number">0</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">]</span>
+    <span class="s-exp">(</span><span class="repeat">dotimes</span> <span class="s-exp">[</span><span class="symbol">i</span> <span class="symbol">num-frames</span><span class="s-exp">]</span>
+      <span class="s-exp">(</span><span class="symbol">retro/retro_run</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+  <span class="s-exp">(</span><span class="special-form">let</span> <span class="s-exp">[</span><span class="symbol">new-state</span> <span class="s-exp">(</span><span class="symbol">get-state</span><span class="s-exp">)</span>
+        <span class="symbol">new-inputs</span> <span class="s-exp">(</span><span class="core-fn">conj</span> <span class="symbol">inputs</span>
+                         <span class="s-exp">{</span><span class="keyword">:controls</span> <span class="symbol">controls</span>
+                          <span class="keyword">:num-frames</span> <span class="symbol">num-frames</span><span class="s-exp">}</span><span class="s-exp">)</span><span class="s-exp">]</span>
+    <span class="s-exp">(</span><span class="core-fn">swap!</span> <span class="symbol">state-cache</span> <span class="core-fn">assoc</span> <span class="symbol">new-inputs</span> <span class="symbol">new-state</span><span class="s-exp">)</span>
+    <span class="symbol">new-inputs</span><span class="s-exp">)</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="definition">defn</span> <span class="symbol">successors</span>
+  <span class="string">&quot;Generates successor states given past inputs.&quot;</span>
+  <span class="s-exp">[</span><span class="symbol">inputs</span><span class="s-exp">]</span>
+  <span class="s-exp">(</span><span class="core-fn">into</span> <span class="s-exp">[</span><span class="s-exp">]</span>
+        <span class="s-exp">(</span><span class="core-fn">comp</span>
+         <span class="s-exp">(</span><span class="core-fn">map</span> <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="symbol">buttons</span> <span class="symbol">dir</span><span class="s-exp">]</span><span class="s-exp">]</span>
+                <span class="s-exp">(</span><span class="core-fn">set</span>
+                 <span class="s-exp">(</span><span class="special-form">if</span> <span class="symbol">dir</span>
+                   <span class="s-exp">(</span><span class="core-fn">conj</span> <span class="symbol">buttons</span> <span class="symbol">dir</span><span class="s-exp">)</span>
+                   <span class="symbol">buttons</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+         <span class="s-exp">(</span><span class="core-fn">map</span> <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">controls</span><span class="s-exp">]</span>
+                <span class="s-exp">(</span><span class="symbol">next-state</span> <span class="symbol">inputs</span> <span class="symbol">controls</span>
+                            <span class="s-exp">(</span><span class="core-fn">inc</span> <span class="s-exp">(</span><span class="core-fn">rand-int</span> <span class="number">60</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+        <span class="s-exp">(</span><span class="symbol">combo/cartesian-product</span>
+           <span class="s-exp">(</span><span class="symbol">combo/subsets</span> <span class="symbol">buttons</span><span class="s-exp">)</span>
+           <span class="symbol">directions</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+</pre></div><h2 id="Distance">Distance</h2><p>The solver accepts a <code>dist</code> function that should return a comparable heuristic value. For our implementation, it doesn&apos;t matter what the heuristic returns as long as it can be compared against other values returned from <code>dist</code>.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="definition">defn</span> <span class="symbol">dist</span>
+  <span class="string">&quot;Checks the current RAM and estimates the current distance from the goal.&quot;</span>
+  <span class="s-exp">[</span><span class="symbol">inputs</span><span class="s-exp">]</span>
+  <span class="s-exp">(</span><span class="special-form">let</span> <span class="s-exp">[</span><span class="symbol">save-state</span> <span class="s-exp">(</span><span class="core-fn">get</span> <span class="reader-char">@</span><span class="symbol">state-cache</span> <span class="symbol">inputs</span><span class="s-exp">)</span><span class="s-exp">]</span>
+    <span class="s-exp">(</span><span class="symbol">retro/retro_unserialize</span> <span class="symbol">save-state</span> <span class="s-exp">(</span><span class="core-fn">alength</span> <span class="symbol">save-state</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+  <span class="s-exp">(</span><span class="special-form">let</span> <span class="s-exp">[</span><span class="symbol">mem</span> <span class="s-exp">(</span><span class="symbol">retro/retro_get_memory_data</span> <span class="symbol">RETRO_MEMORY_SYSTEM_RAM</span><span class="s-exp">)</span>
+        <span class="symbol">screen-tile</span> <span class="s-exp">(</span><span class="symbol">.getByte</span> <span class="symbol">mem</span> <span class="number">0x006D</span><span class="s-exp">)</span>
+        <span class="symbol">xpos</span> <span class="s-exp">(</span><span class="symbol">.getByte</span> <span class="symbol">mem</span> <span class="number">0x0086</span><span class="s-exp">)</span>
+        <span class="symbol">subpixel</span> <span class="s-exp">(</span><span class="symbol">.getByte</span> <span class="symbol">mem</span> <span class="number">0x0400</span><span class="s-exp">)</span>
+        <span class="comment">;; absolute
+</span>        <span class="symbol">speed</span> <span class="s-exp">(</span><span class="symbol">.getByte</span> <span class="symbol">mem</span> <span class="number">0x0700</span><span class="s-exp">)</span>
+        <span class="symbol">vertical-position</span> <span class="s-exp">(</span><span class="symbol">.getByte</span> <span class="symbol">mem</span>  <span class="number">0x00B5</span><span class="s-exp">)</span>
+        <span class="symbol">below-viewport?</span> <span class="s-exp">(</span><span class="core-fn">&gt;</span> <span class="symbol">vertical-position</span> <span class="number">1</span><span class="s-exp">)</span>
+        <span class="symbol">on-flag-pole?</span> <span class="s-exp">(</span><span class="core-fn">=</span> <span class="number">0x03</span> <span class="s-exp">(</span><span class="symbol">.getByte</span> <span class="symbol">mem</span> <span class="number">0x001D</span><span class="s-exp">)</span><span class="s-exp">)</span>
+        <span class="symbol">dead?</span> <span class="s-exp">(</span><span class="core-fn">=</span> <span class="number">3</span> <span class="s-exp">(</span><span class="symbol">.getByte</span> <span class="symbol">mem</span> <span class="number">0x0770</span><span class="s-exp">)</span><span class="s-exp">)</span>
+        <span class="symbol">ypos</span> <span class="s-exp">(</span><span class="symbol">byte-format</span> <span class="s-exp">(</span><span class="symbol">.getByte</span> <span class="symbol">mem</span> <span class="number">0x03B8</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">]</span>
+    <span class="s-exp">[</span><span class="s-exp">(</span><span class="core-fn">not</span> <span class="symbol">on-flag-pole?</span><span class="s-exp">)</span>
+     <span class="symbol">dead?</span>
+     <span class="symbol">below-viewport?</span>
+     <span class="s-exp">(</span><span class="core-fn">-</span> <span class="s-exp">(</span><span class="symbol">-&gt;coord</span> <span class="symbol">screen-tile</span> <span class="symbol">xpos</span> <span class="symbol">subpixel</span><span class="s-exp">)</span><span class="s-exp">)</span>
+     <span class="symbol">ypos</span>
+     <span class="s-exp">(</span><span class="core-fn">-</span> <span class="symbol">speed</span><span class="s-exp">)</span>
+     <span class="s-exp">(</span><span class="core-fn">count</span> <span class="symbol">inputs</span><span class="s-exp">)</span><span class="s-exp">]</span><span class="s-exp">)</span><span class="s-exp">)</span>
+</pre></div><p>The 7 main factors of our current heuristic are:</p><ol><li><p><code>(not on-flag-pole?)</code>: Indicates whether we&apos;ve reached our final goal, the flag pole!</p></li><li><p><code>dead?</code>: Indicates whether Mario has died.</p></li><li><p><code>below-viewport?</code>: One of Mario&apos;s primary hazards is falling into bottomless pits. Mario doesn&apos;t die instantly when he falls in a pit. This heuristic let&apos;s us short circuit when we know Mario is falling to his doom.</p></li><li><p><code>(- (-&gt;coord screen-tile xpos subpixel))</code>: Measures Mario&apos;s horizontal position. The value is negated because <code>dist</code> should decrease as we get closer to our goal.</p></li><li><p><code>ypos</code>: Mario&apos;s vertical position. Since it&apos;s easier for Mario to fall than to climb, we prefer exploring states where Mario is higher up. There are scenarios where this heuristic could get us stuck, but it didn&apos;t seem to be a problem for the levels we explored. Overall, this heuristic was very helpful for making it through the platforming levels with many bottomless pits. This value is not negated because it&apos;s already measured from the top of the screen and decreases as it &quot;improves&quot;.</p></li><li><p><code>(- speed)</code>: Mario&apos;s absolute horizontal speed. We prefer fast Mario over slow Mario. Negated because <code>dist</code> should decrease as we get closer to our goal.</p></li><li><p><code>(count inputs)</code>: This is the total number of different steps we&apos;ve taken in our current path. We penalize longer paths.</p></li></ol><h1 id="Levels">Levels</h1><p>Here are the completed levels. As you can see, the AI does not play like a normal human, but is definitely not super human either (yet!).</p><p>Note: Some levels will look very similar to other levels. I promise I didn&apos;t upload the wrong video. Notably, world 7 copies heavily from world 2.</p><h2 id="Level-1-1">Level 1-1</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-1-1.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-1-2">Level 1-2</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-1-2.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-1-3">Level 1-3</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-1-3.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-1-4">Level 1-4</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-1-4.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-2-1">Level 2-1</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-2-1.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-2-2">Level 2-2</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-2-2.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-2-3">Level 2-3</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-2-3.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-2-4">Level 2-4</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-2-4.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-3-1">Level 3-1</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-3-1.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-3-2">Level 3-2</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-3-2.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-3-3">Level 3-3</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-3-3.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-3-4">Level 3-4</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-3-4.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-4-1">Level 4-1</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-4-1.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-4-2">Level 4-2</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-4-2.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-4-3">Level 4-3</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-4-3.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-5-1">Level 5-1</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-5-1.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-5-2">Level 5-2</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-5-2.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-5-3">Level 5-3</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-5-3.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-5-4">Level 5-4</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-5-4.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-6-1">Level 6-1</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-6-1.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-6-2">Level 6-2</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-6-2.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-6-3">Level 6-3</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-6-3.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-6-4">Level 6-4</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-6-4.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-7-1">Level 7-1</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-7-1.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-7-2">Level 7-2</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-7-2.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-7-3">Level 7-3</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-7-3.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-8-1">Level 8-1</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-8-1.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-8-2">Level 8-2</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-8-2.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h2 id="Level-8-3">Level 8-3</h2>&lt;p&gt;&lt;video controls preload=&quot;none&quot;&gt;
+  &lt;source src=&quot;mairio/videos/mairio-level-8-3.mp4&quot; type=&quot;video/mp4&quot; /&gt;
+&lt;/video&gt;&lt;/p&gt;<h1 id="Conclusion">Conclusion</h1><p>Overall, I&apos;m pretty happy that this simple AI was able to beat all the non maze levels. There&apos;s also plenty of room for improvement to explore in the future.</p><h2 id="Future-Work">Future Work</h2><h3 id="Generalize">Generalize</h3><p>There&apos;s a lot of hard-coded pieces. It would be nice to refactor to make it easier to support more exploration strategies, heuristics, and policies.</p><h3 id="Improved-Exploration-and-Backtracking">Improved Exploration and Backtracking</h3><p>Currently, the solver will only backtrack based on horizontal position. Furthermore, the backtracking window is constant. There are multiple theoretical improvements, but one general idea is to continue being greedier when you&apos;re making progress and spend more time exploring when you get stuck. With a better exploration strategy, maybe our solver could be improved to beat the dreaded maze levels.</p><h3 id="Beating-the-Full-Game">Beating the Full Game</h3><p>In addition to not being able to complete some of the Bowser levels, our solver also doesn&apos;t handle pipes and level transitions well. It shouldn&apos;t be that hard to detect those cases so that the solver can solve multiple levels and eventually, the full game.</p><h1 id="Extra-Resources">Extra Resources</h1><p>All code for this project can be found on <a href="https://github.com/phronmophobic/clj-libretro/blob/67f186e87345ba4d979a63ab1dfd982c44d5fea7/src/com/phronemophobic/clj_libretro/ai.clj">github</a>.</p><p><a href="http://tom7.org/mario/">Tom7&apos;s learnfun &amp; playfun: A general technique for automating NES games</a></p><p><a href="https://www.deepmind.com/blog/agent57-outperforming-the-human-atari-benchmark">Agent57: Outperforming the human Atari benchmark</a></p><p><a href="https://rubenfiszel.github.io/posts/rl4j/2016-08-24-Reinforcement-Learning-and-DQN.html">Reinforcement Learning and DQN, learning to play from pixels</a></p><h1 id="Footnotes">Footnotes</h1><div class="footnotes"><div><a href="#footnote-ref-1" name="footnote-1">1</a>. They were not so lucky.</div></div></div></div></div></div></div></body></html>

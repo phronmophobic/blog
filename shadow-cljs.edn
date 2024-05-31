@@ -1,6 +1,6 @@
 {:source-paths ["src"]
- :dependencies [[com.phronemophobic/membrane "0.9.12-beta-SNAPSHOT"]
-                [com.phronemophobic/treemap-clj "0.2.0"]
+ :dependencies [[com.phronemophobic/membrane "0.14.4-beta"]
+                [com.phronemophobic/treemap-clj "0.2.6"]
                 ]
  :builds {:app {:target :browser
                 :output-dir "resources/public/js"

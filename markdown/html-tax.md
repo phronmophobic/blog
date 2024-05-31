@@ -92,6 +92,8 @@ This is further complicated by the fact that rendering a web page isn't just abo
 
 Data should be semantically transparent. A data format should have meaning outside of any specific implementation. It shouldn't mean "whatever shows up in Chrome today". There's a lot of times when we'd like to generically debug, profile, manipulate, and inspect a UI component, but it's so cumbersome that that we don't do it.
 
+<!-- https://www.figma.com/blog/behind-the-feature-shadow-spread/ -->
+
 It may seem like I'm being a bit unfair and I wish that were true, but the elusive nature of HTML is baked into the living standard.
 
 > User agents are not required to present HTML documents in any particular way. However, this section provides a set of suggestions for rendering HTML documents that, if followed, are likely to lead to a user experience that closely resembles the experience intended by the documents' authors.

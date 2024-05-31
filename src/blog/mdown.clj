@@ -676,8 +676,8 @@
           [:a.nav-link {:href "https://github.com/phronmophobic/membrane"}
            "Membrane Github"]]]
    :asset-prefix "membrane-topics/"
-   :src "/Users/adrian/workspace/membrane2/docs/topics.md"
-   :out "/Users/adrian/workspace/membrane2/docs/membrane-topics.html"})
+   :src "/Users/adrian/workspace/membrane/docs/topics.md"
+   :out "/Users/adrian/workspace/membrane/docs/membrane-topics.html"})
 
 (defpost what-is-a-ui
   {:id :what-is-a-ui

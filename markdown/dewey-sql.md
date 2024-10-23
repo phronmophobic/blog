@@ -5,7 +5,7 @@ Posted: October 22, 2024
 # Introduction
 
 
-It's been about two years since the [last dewey post](https://blog.phronemophobic.com/dewey-analysis.html). [Dewey](https://github.com/phronmophobic/dewey) is now tracking 12,947 libraries which includes an additional 1,401 more repos.
+It's been about two years since the [last dewey post](https://blog.phronemophobic.com/dewey-analysis.html). [Dewey](https://github.com/phronmophobic/dewey) is now tracking 12,947 libraries (1,401 more repos!).
 
 Starting with the `2024-10-21` release, dewey now includes a sqlite dump that makes it easier to investigate the analyses generated. For those unfamiliar with dewey, dewey is a project that scans github for clojure projects and runs [clj-kondo analysis](https://github.com/clj-kondo/clj-kondo/tree/master/analysis) for each. The results are then [released](https://github.com/phronmophobic/dewey/releases) weekly.
 

@@ -646,7 +646,7 @@
   {:id :dewey-sql
    :title "Dewey SQL"
    :subheading "Analyzing Every Clojure Project with SQL"
-   :vega? true
+   :vega? false
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav
           [:a.nav-link

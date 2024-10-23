@@ -636,20 +636,19 @@
                  "Code on Github"]]]
    :src "markdown/functional-ui.md"
    :out "functional-ui.html"})
-
-(defpost dewey-analysis
-  {:id :dewey-analysis
-   :title "Analyzing Every Clojure Project on Github"
-   ;; :subheading ""
+(defpost dewey-sql
+  {:id :dewey-sql
+   :title "Dewey SQL"
+   :subheading "Analyzing Every Clojure Project with SQL"
    :vega? true
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav
           [:a.nav-link
            {:href "/"}
            "Home"]]]
-   :asset-prefix "dewey-analysis/"
-   :src "markdown/dewey-analysis.md"
-   :out "dewey-analysis.html"})
+   :asset-prefix "dewey-sql/"
+   :src "markdown/dewey-sql.md"
+   :out "dewey-sql.html"})
 
 (defpost clojure-plays-mario
   {:id :mairio
@@ -664,6 +663,20 @@
    :asset-prefix "mairio/"
    :src "markdown/mairio.md"
    :out "mairio.html"})
+
+(defpost dewey-analysis
+  {:id :dewey-analysis
+   :title "Analyzing Every Clojure Project on Github"
+   ;; :subheading ""
+   :vega? true
+   :nav [:div {:class "container"}
+         [:nav.nav.blog-nav
+          [:a.nav-link
+           {:href "/"}
+           "Home"]]]
+   :asset-prefix "dewey-analysis/"
+   :src "markdown/dewey-analysis.md"
+   :out "dewey-analysis.html"})
 
 (defpost membrane-topics
   {:id :membrane-topics

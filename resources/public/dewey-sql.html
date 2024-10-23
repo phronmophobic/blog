@@ -1,0 +1,275 @@
+<html lang="en"><head><meta charset="utf-8" /><meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport" /><meta content="Adrian Smith" name="author" /><link href="dewey-sql/favicon.ico" rel="icon" /><title>Dewey SQL</title><script src="https://cdn.jsdelivr.net/npm/vega@5.22.1"></script><script src="https://cdn.jsdelivr.net/npm/vega-lite@5.5.0"></script><script src="https://cdn.jsdelivr.net/npm/vega-embed@6.21.0"></script><link href="dewey-sql/bootstrap.min.css" rel="stylesheet" /><link href="dewey-sql/blog.css" rel="stylesheet" /><style type="text/css">.syntax pre {
+  background: ;
+}
+
+.syntax pre .definition {
+  color: #00f;
+}
+
+.syntax pre .core-fn {
+  color: #30a;
+}
+
+.syntax pre .variable {
+  color: black;
+}
+
+.syntax pre .number {
+  color: #164;
+}
+
+.syntax pre .s-exp {
+  color: #997;
+}
+
+.syntax pre .special-form {
+  color: #30a;
+}
+
+.syntax pre .string {
+  color: #a11;
+}
+
+.syntax pre .keyword {
+  color: #708;
+}
+
+.syntax pre .macro {
+  color: #05a;
+}
+
+.syntax pre .reader-char {
+  color: #555;
+}
+
+.syntax pre .nil {
+  color: #164;
+}
+
+.syntax pre .comment {
+  color: #a50;
+}
+
+.syntax pre .repeat {
+  color: #f00;
+}
+
+.syntax pre .regex {
+  color: #f50;
+}
+
+.syntax pre .exception {
+  color: #f00;
+}
+
+.syntax pre .boolean {
+  color: #164;
+}
+
+.syntax pre .character {
+  color: #f50;
+}
+
+.syntax pre .conditional {
+  color: #30a;
+} div.syntax { padding: 4px ; background-color: #f8f8f8; margin-bottom: 18px } div.syntax pre { margin-bottom: 0 }</style></head><body><div class="blog-masthead"><div class="container"><nav class="nav blog-nav"><a class="nav-link" href="/">Home</a></nav></div></div><div class="blog-header"><div class="container"><h1 class="blog-title">Dewey SQL</h1><p class="lead blog-description">Analyzing Every Clojure Project with SQL</p></div></div><div class="container"><div class="row"><div class="col-sm-8 blog-main"><div class="blog-post"><div><ul><li><a href="#Introduction">Introduction</a></li><ul><li><a href="#Getting-Started">Getting Started</a></li><li><a href="#Running-queries">Running queries</a></li></ul><li><a href="#Clojure-State">Clojure State</a></li><ul><li><a href="#Reference-Type-Usage">Reference Type Usage</a></li></ul><li><a href="#Java-Interop">Java Interop</a></li><li><a href="#Namespaced-Keywords">Namespaced Keywords</a></li><li><a href="#Awards">Awards</a></li><ul><li><a href="#Whatchamcallit-Award">Whatchamcallit Award</a></li><li><a href="#Early-Adopter-Award">Early Adopter Award</a></li></ul><li><a href="#Web-Interface">Web Interface</a></li><li><a href="#Conclusion">Conclusion</a></li></ul><p>Posted: October 22, 2024</p><h1 id="Introduction">Introduction</h1><p>It&apos;s been about two years since the <a href="https://blog.phronemophobic.com/dewey-analysis.html">last dewey post</a>. <a href="https://github.com/phronmophobic/dewey">Dewey</a> is now tracking 12,947 libraries which includes an additional 1,401 more repos.</p><p>Starting with the <code>2024-10-21</code> release, dewey now includes a sqlite dump that makes it easier to investigate the analyses generated. For those unfamiliar with dewey, dewey is a project that scans github for clojure projects and runs <a href="https://github.com/clj-kondo/clj-kondo/tree/master/analysis">clj-kondo analysis</a> for each. The results are then <a href="https://github.com/phronmophobic/dewey/releases">released</a> weekly.</p><p>For this post, my goal is to show how the sql dump can be used by doing a bit of curiosity driven analysis.</p><h2 id="Getting-Started">Getting Started</h2><p>To get, started, download the <code>dewey.sqlite3.sql.gz</code> file from the <a href="https://github.com/phronmophobic/dewey/releases">dewey releases</a> page. The sql can be loaded into a fresh sqlite db named <code>dewey.sqlite</code> as follows.</p><pre><code>;; note: some systems use zcat instead of gzcat
+gzcat dewey.sqlite3.sql.gz | sqlite3 dewey.sqlite
+</code></pre><p>That&apos;s it! You are now ready to start querying the analyses. The sql dump doesn&apos;t include any indexes. Queries are generally pretty fast, but it may be useful to add indexes for specific columns depending on the queries you expect to run.</p><h2 id="Running-queries">Running queries</h2><p>For our analysis, we&apos;ll be using <a href="https://github.com/seancorfield/next-jdbc">next.jdbc</a> and <a href="https://github.com/seancorfield/honeysql/">HoneySQL</a>.</p><div class="syntax"><pre><span class="comment">;; require the helper libraries
+</span><span class="s-exp">(</span><span class="core-fn">require</span> <span class="reader-char">&apos;</span><span class="s-exp">[</span><span class="symbol">clojure.java.io</span> <span class="keyword">:as</span> <span class="symbol">io</span><span class="s-exp">]</span>
+         <span class="reader-char">&apos;</span><span class="s-exp">[</span><span class="symbol">honey.sql</span> <span class="keyword">:as</span> <span class="symbol">sql</span><span class="s-exp">]</span>
+         <span class="reader-char">&apos;</span><span class="s-exp">[</span><span class="symbol">next.jdbc</span> <span class="keyword">:as</span> <span class="symbol">jdbc</span><span class="s-exp">]</span><span class="s-exp">)</span>
+
+<span class="comment">;; next.jdbc db spec
+</span><span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">db</span> <span class="s-exp">{</span><span class="keyword">:dbtype</span> <span class="string">&quot;sqlite&quot;</span>
+         <span class="keyword">:dbname</span> <span class="string">&quot;dewey.sqlite&quot;</span><span class="s-exp">}</span><span class="s-exp">)</span>
+
+<span class="comment">;; helper functions
+</span><span class="s-exp">(</span><span class="definition">defn</span> <span class="symbol">q</span>
+  <span class="string">&quot;Takes a honey sql query and runs it on db, returning the results.&quot;</span>
+  <span class="s-exp">[</span><span class="symbol">m</span><span class="s-exp">]</span>
+  <span class="s-exp">(</span><span class="symbol">jdbc/execute!</span> <span class="symbol">db</span> <span class="s-exp">(</span><span class="symbol">sql/format</span> <span class="symbol">m</span>
+                                <span class="s-exp">{</span><span class="keyword">:quoted</span> <span class="boolean">true</span><span class="s-exp">}</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">total-repos</span>
+  <span class="s-exp">(</span><span class="macro">-&gt;</span> <span class="s-exp">(</span><span class="symbol">q</span> <span class="s-exp">{</span><span class="keyword">:select</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="s-exp">[</span><span class="keyword">:count</span> <span class="s-exp">[</span><span class="keyword">:distinct</span> <span class="keyword">:repo</span><span class="s-exp">]</span><span class="s-exp">]</span> <span class="keyword">:num-repos</span><span class="s-exp">]</span><span class="s-exp">]</span>
+       <span class="keyword">:from</span> <span class="keyword">:basis</span><span class="s-exp">}</span><span class="s-exp">)</span>
+      <span class="core-fn">first</span>
+      <span class="keyword">:num-repos</span><span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="comment">;; 12974
+</span>
+</pre></div><h1 id="Clojure-State">Clojure State</h1><p>One of the more interesting takeaways from the last dewey post is that most libraries don&apos;t have mutable state. For our purposes, we&apos;ll say that a repo doesn&apos;t have any mutable state if they don&apos;t use any of the managed state references. There are other types of mutable state available in clojure, but we&apos;ll assume they are negligible.</p><h3 id="Reference-Type-Usage">Reference Type Usage</h3><div class="syntax"><pre><span class="s-exp">(</span><span class="symbol">q</span> <span class="s-exp">{</span><span class="keyword">:select</span> <span class="s-exp">[</span><span class="keyword">:name</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="keyword">:count</span> <span class="keyword">:*</span><span class="s-exp">]</span> <span class="keyword">:c</span><span class="s-exp">]</span><span class="s-exp">]</span>
+    <span class="keyword">:from</span> <span class="keyword">:var-usages</span>
+    <span class="keyword">:where</span> <span class="s-exp">[</span><span class="keyword">:and</span>
+            <span class="s-exp">[</span><span class="keyword">:in</span> <span class="keyword">:name</span> <span class="s-exp">[</span><span class="string">&quot;ref&quot;</span> <span class="string">&quot;agent&quot;</span> <span class="string">&quot;volatile!&quot;</span> <span class="string">&quot;atom&quot;</span><span class="s-exp">]</span><span class="s-exp">]</span>
+            <span class="s-exp">[</span><span class="keyword">:=</span> <span class="string">&quot;clojure.core&quot;</span> <span class="keyword">:to</span><span class="s-exp">]</span><span class="s-exp">]</span>
+    <span class="keyword">:group-by</span> <span class="s-exp">[</span><span class="keyword">:name</span><span class="s-exp">]</span><span class="s-exp">}</span><span class="s-exp">)</span>
+<span class="comment">;; [{:var-usages/name &quot;agent&quot;, :c 701}
+</span><span class="comment">;;  {:var-usages/name &quot;atom&quot;, :c 25048}
+</span><span class="comment">;;  {:var-usages/name &quot;ref&quot;, :c 2332}
+</span><span class="comment">;;  {:var-usages/name &quot;volatile!&quot;, :c 2249}]
+</span></pre></div><p>Compared to two years ago, <code>volatile!</code> has nearly doubled in usage. The usage of the other reference types seems steady and unsurprising. The <code>atom</code> is still, by far, the goto for state in clojure.</p><p>The raw counts are only a rough measure since they can be skewed by outliers.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">repos-with-state</span>
+  <span class="s-exp">(</span><span class="macro">-&gt;</span> <span class="s-exp">(</span><span class="symbol">q</span> <span class="s-exp">{</span><span class="keyword">:select</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="s-exp">[</span><span class="keyword">:count</span> <span class="s-exp">[</span><span class="keyword">:distinct</span> <span class="keyword">:repo</span><span class="s-exp">]</span><span class="s-exp">]</span> <span class="keyword">:c</span><span class="s-exp">]</span><span class="s-exp">]</span>
+          <span class="keyword">:from</span> <span class="keyword">:basis</span>
+          <span class="keyword">:left-join</span> <span class="s-exp">[</span><span class="keyword">:var-usages</span> <span class="s-exp">[</span><span class="keyword">:and</span>
+                                   <span class="s-exp">[</span><span class="keyword">:=</span> <span class="keyword">:var-usages.basis-id</span> <span class="keyword">:basis/id</span><span class="s-exp">]</span><span class="s-exp">]</span><span class="s-exp">]</span>
+          <span class="keyword">:where</span> <span class="s-exp">[</span><span class="keyword">:and</span>
+                  <span class="s-exp">[</span><span class="keyword">:in</span> <span class="keyword">:name</span> <span class="s-exp">[</span><span class="string">&quot;ref&quot;</span> <span class="string">&quot;agent&quot;</span> <span class="string">&quot;volatile!&quot;</span> <span class="string">&quot;atom&quot;</span><span class="s-exp">]</span><span class="s-exp">]</span>
+                  <span class="s-exp">[</span><span class="keyword">:=</span> <span class="string">&quot;clojure.core&quot;</span> <span class="keyword">:to</span><span class="s-exp">]</span><span class="s-exp">]</span><span class="s-exp">}</span><span class="s-exp">)</span>
+      <span class="core-fn">first</span>
+      <span class="keyword">:c</span><span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="comment">;; 4818
+</span><span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">repos-without-state-ratio</span>
+  <span class="s-exp">(</span><span class="core-fn">-</span> <span class="number">1.0</span> <span class="s-exp">(</span><span class="core-fn">/</span> <span class="symbol">repos-with-state</span> <span class="symbol">total-repos</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="comment">;; 0.6286418991829813
+</span>
+</pre></div><p>Around 62% of clojure repos have no mutable references. This is down from 63% the last time we checked. I blame <code>volatile!</code>.</p><h1 id="Java-Interop">Java Interop</h1><p>Another change since the last post is that dewey now includes analysis related to Java interop. A common question from folks interested in learning clojure is if learning Java is required. Let&apos;s see if we can collect some data.</p><p>First, let&apos;s count the number of repos that use Java classes via interop:</p><div class="syntax"><pre>
+<span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">uses-java-class-repo-count</span>
+  <span class="s-exp">(</span><span class="symbol">q</span> <span class="s-exp">{</span><span class="keyword">:select</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="s-exp">[</span><span class="keyword">:count</span> <span class="s-exp">[</span><span class="keyword">:distinct</span> <span class="keyword">:repo</span><span class="s-exp">]</span><span class="s-exp">]</span> <span class="keyword">:uses-java-classes</span><span class="s-exp">]</span><span class="s-exp">]</span>
+      <span class="keyword">:from</span> <span class="keyword">:basis</span>
+      <span class="keyword">:left-join</span> <span class="s-exp">[</span><span class="keyword">:java-class-usages</span>
+                  <span class="s-exp">[</span><span class="keyword">:and</span>
+                   <span class="s-exp">[</span><span class="keyword">:=</span> <span class="keyword">:java-class-usages.basis-id</span> <span class="keyword">:basis/id</span><span class="s-exp">]</span><span class="s-exp">]</span><span class="s-exp">]</span>
+      <span class="keyword">:where</span> <span class="s-exp">[</span><span class="keyword">:is-not</span> <span class="keyword">:class</span> <span class="nil">nil</span><span class="s-exp">]</span><span class="s-exp">}</span><span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="comment">;; [{:uses-java-classes 9830}]
+</span></pre></div><p>There are 9,380 repos that use Java classes which is about 76%. This is actualy higher than expected. Let&apos;s see if we can figure out the distribution of class usages by repo.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">class-usages-by-repo</span>
+  <span class="s-exp">(</span><span class="symbol">q</span> <span class="s-exp">{</span><span class="keyword">:select</span> <span class="s-exp">[</span><span class="keyword">:repo</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="keyword">:count</span> <span class="s-exp">[</span><span class="keyword">:distinct</span> <span class="keyword">:class</span><span class="s-exp">]</span><span class="s-exp">]</span>  <span class="keyword">:c</span><span class="s-exp">]</span><span class="s-exp">]</span>
+      <span class="keyword">:from</span> <span class="keyword">:basis</span>
+      <span class="keyword">:inner-join</span> <span class="s-exp">[</span><span class="keyword">:java-class-usages</span>
+                   <span class="s-exp">[</span><span class="keyword">:and</span>
+                    <span class="s-exp">[</span><span class="keyword">:=</span> <span class="keyword">:java-class-usages.basis-id</span> <span class="keyword">:basis/id</span><span class="s-exp">]</span><span class="s-exp">]</span><span class="s-exp">]</span>
+      <span class="keyword">:group-by</span> <span class="s-exp">[</span><span class="keyword">:repo</span><span class="s-exp">]</span><span class="s-exp">}</span><span class="s-exp">)</span><span class="s-exp">)</span>
+
+
+<span class="comment">;; counting repos by the number of
+</span><span class="comment">;; distinct classes used.
+</span>
+<span class="s-exp">(</span><span class="macro">-&gt;&gt;</span> <span class="symbol">class-usages-by-repo</span>
+     <span class="s-exp">(</span><span class="core-fn">group-by</span> <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="s-exp">{</span><span class="keyword">:keys</span> <span class="s-exp">[</span><span class="symbol">c</span><span class="s-exp">]</span><span class="s-exp">}</span><span class="s-exp">]</span>
+                 <span class="comment">;; bucket all 10+ together
+</span>                 <span class="s-exp">(</span><span class="special-form">if</span> <span class="s-exp">(</span><span class="core-fn">&lt;</span> <span class="symbol">c</span> <span class="number">10</span><span class="s-exp">)</span>
+                   <span class="symbol">c</span>
+                   <span class="number">10</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+     <span class="s-exp">(</span><span class="core-fn">map</span> <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="symbol">c</span> <span class="symbol">repos</span><span class="s-exp">]</span><span class="s-exp">]</span>
+            <span class="s-exp">[</span><span class="symbol">c</span> <span class="s-exp">(</span><span class="core-fn">count</span> <span class="symbol">repos</span><span class="s-exp">)</span><span class="s-exp">]</span><span class="s-exp">)</span><span class="s-exp">)</span>
+     <span class="s-exp">(</span><span class="core-fn">sort-by</span> <span class="core-fn">first</span><span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="s-exp">(</span><span class="s-exp">[</span><span class="number">1</span> <span class="number">1498</span><span class="s-exp">]</span>
+ <span class="s-exp">[</span><span class="number">2</span> <span class="number">1228</span><span class="s-exp">]</span>
+ <span class="s-exp">[</span><span class="number">3</span> <span class="number">849</span><span class="s-exp">]</span>
+ <span class="s-exp">[</span><span class="number">4</span> <span class="number">673</span><span class="s-exp">]</span>
+ <span class="s-exp">[</span><span class="number">5</span> <span class="number">556</span><span class="s-exp">]</span>
+ <span class="s-exp">[</span><span class="number">6</span> <span class="number">438</span><span class="s-exp">]</span>
+ <span class="s-exp">[</span><span class="number">7</span> <span class="number">393</span><span class="s-exp">]</span>
+ <span class="s-exp">[</span><span class="number">8</span> <span class="number">314</span><span class="s-exp">]</span>
+ <span class="s-exp">[</span><span class="number">9</span> <span class="number">313</span><span class="s-exp">]</span>
+ <span class="comment">;; greater than 10
+</span> <span class="s-exp">[</span><span class="number">10</span> <span class="number">3568</span><span class="s-exp">]</span><span class="s-exp">)</span>
+
+</pre></div><p>Looking more closely at the numbers, most of the repos that do use classes are using just a handful of classes.</p><p>Out of curiousity, let&apos;s see which classes are the most commonly used.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">class-usage-counts</span>
+  <span class="s-exp">(</span><span class="symbol">q</span> <span class="s-exp">{</span><span class="keyword">:select</span> <span class="s-exp">[</span><span class="keyword">:class</span> <span class="keyword">:class</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="keyword">:count</span> <span class="s-exp">[</span><span class="keyword">:distinct</span> <span class="keyword">:repo</span><span class="s-exp">]</span><span class="s-exp">]</span>  <span class="keyword">:c</span><span class="s-exp">]</span><span class="s-exp">]</span>
+      <span class="keyword">:from</span> <span class="keyword">:basis</span>
+      <span class="keyword">:inner-join</span> <span class="s-exp">[</span><span class="keyword">:java-class-usages</span>
+                   <span class="s-exp">[</span><span class="keyword">:and</span>
+                    <span class="s-exp">[</span><span class="keyword">:=</span> <span class="keyword">:java-class-usages.basis-id</span> <span class="keyword">:basis/id</span><span class="s-exp">]</span><span class="s-exp">]</span><span class="s-exp">]</span>
+      <span class="keyword">:group-by</span> <span class="s-exp">[</span><span class="keyword">:class</span><span class="s-exp">]</span>
+      <span class="keyword">:order-by</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="keyword">:c</span> <span class="keyword">:desc</span><span class="s-exp">]</span><span class="s-exp">]</span>
+      <span class="keyword">:limit</span> <span class="number">30</span><span class="s-exp">}</span><span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="comment">;; [{:java-class-usages/class &quot;java.lang.Exception&quot;, :c 4183}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.lang.String&quot;, :c 3532}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.lang.System&quot;, :c 3515}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.lang.Integer&quot;, :c 3145}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.lang.Thread&quot;, :c 2084}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.io.File&quot;, :c 1745}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.lang.Throwable&quot;, :c 1665}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.lang.Math&quot;, :c 1593}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.lang.Object&quot;, :c 1549}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.lang.Long&quot;, :c 1514}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.lang.IllegalArgumentException&quot;,
+</span><span class="comment">;;   :c 1286}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.util.Date&quot;, :c 1103}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.util.UUID&quot;, :c 1082}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.lang.Double&quot;, :c 996}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.lang.Boolean&quot;, :c 791}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.lang.Class&quot;, :c 697}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.io.ByteArrayOutputStream&quot;, :c 678}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.lang.Runtime&quot;, :c 649}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.io.ByteArrayInputStream&quot;, :c 637}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.lang.RuntimeException&quot;, :c 628}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.lang.Character&quot;, :c 590}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.net.URL&quot;, :c 579}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.io.Writer&quot;, :c 558}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.io.InputStream&quot;, :c 526}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.net.URI&quot;, :c 521}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.io.PushbackReader&quot;, :c 519}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.util.concurrent.TimeUnit&quot;, :c 516}
+</span><span class="comment">;;  {:java-class-usages/class &quot;clojure.lang.IPersistentMap&quot;, :c 499}
+</span><span class="comment">;;  {:java-class-usages/class &quot;clojure.lang.ExceptionInfo&quot;, :c 499}
+</span><span class="comment">;;  {:java-class-usages/class &quot;java.util.Map&quot;, :c 495}]
+</span>
+</pre></div><p>As can be seen, most java class usage is related to exceptions, strings, and I/O. Some of these usages can probably be replaced with libraries (eg. <a href="https://github.com/babashka/fs">babashka.fs</a>) or namespaces in the clojure core library (eg. <a href="https://clojure.github.io/clojure/clojure.math-api.html">clojure.math</a>, <a href="https://clojuredocs.org/clojure.string">clojure.string</a>, and <a href="https://clojuredocs.org/clojure.java.io">clojure.java.io</a>). However, I&apos;m not aware of any pure clojure equivalent for <code>java.lang.Exception</code> which is the most popular class.</p><h1 id="Namespaced-Keywords">Namespaced Keywords</h1><p>I&apos;ve been curious to see how prevelant namespaced keywords are. Let&apos;s see!</p><div class="syntax"><pre><span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">namespaced-keyword-usages</span>
+  <span class="s-exp">(</span><span class="symbol">q</span> <span class="s-exp">{</span><span class="keyword">:select</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="s-exp">[</span><span class="keyword">:is-not</span> <span class="keyword">:ns</span> <span class="nil">nil</span><span class="s-exp">]</span> <span class="keyword">:namespaced</span><span class="s-exp">]</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="keyword">:count</span> <span class="keyword">:*</span><span class="s-exp">]</span>  <span class="keyword">:c</span><span class="s-exp">]</span><span class="s-exp">]</span>
+      <span class="keyword">:from</span> <span class="keyword">:keywords</span>
+      <span class="keyword">:group-by</span> <span class="s-exp">[</span><span class="keyword">:namespaced</span><span class="s-exp">]</span><span class="s-exp">}</span><span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="comment">;; [{:namespaced 0, :c 13570743}
+</span><span class="comment">;;  {:namespaced 1, :c  2630640}]
+</span></pre></div><p>There&apos;s about an order of magnitude more unqualified keywords vs qualified keywords. As mentioned, raw counts can be a bit misleading, so let&apos;s compare the number of repos that use qualified keywords vs those that don&apos;t.</p><div class="syntax"><pre>
+<span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">namespaced-keywords-repo-count</span>
+  <span class="s-exp">(</span><span class="symbol">q</span> <span class="s-exp">{</span><span class="keyword">:select</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="s-exp">[</span><span class="keyword">:count</span> <span class="s-exp">[</span><span class="keyword">:distinct</span> <span class="keyword">:repo</span><span class="s-exp">]</span><span class="s-exp">]</span>  <span class="keyword">:c</span><span class="s-exp">]</span><span class="s-exp">]</span>
+      <span class="keyword">:from</span> <span class="keyword">:basis</span>
+      <span class="keyword">:left-join</span> <span class="s-exp">[</span><span class="keyword">:keywords</span>
+                  <span class="s-exp">[</span><span class="keyword">:and</span>
+                   <span class="s-exp">[</span><span class="keyword">:=</span> <span class="keyword">:basis-id</span> <span class="keyword">:basis/id</span><span class="s-exp">]</span><span class="s-exp">]</span><span class="s-exp">]</span>
+      <span class="keyword">:where</span> <span class="s-exp">[</span><span class="keyword">:is-not</span> <span class="keyword">:ns</span> <span class="nil">nil</span><span class="s-exp">]</span><span class="s-exp">}</span><span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="comment">;; [{:c 5084}]
+</span><span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">qualified-usage-ratio</span>
+  <span class="s-exp">(</span><span class="core-fn">/</span> <span class="s-exp">(</span><span class="macro">-&gt;</span> <span class="symbol">namespaced-keywords-repo-count</span>
+         <span class="core-fn">first</span>
+         <span class="keyword">:c</span>
+         <span class="core-fn">double</span><span class="s-exp">)</span>
+     <span class="symbol">total-repos</span><span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="comment">;; 0.3918606443656544
+</span><span class="s-exp">(</span><span class="core-fn">-</span> <span class="number">1.0</span> <span class="symbol">qualified-usage-ratio</span><span class="s-exp">)</span>
+<span class="comment">;; 0.6081393556343456
+</span>
+</pre></div><p>About 60% of repos don&apos;t use any qualified keywords. That&apos;s a bit higher than expected, but I guess I&apos;m not sure what I expected. It would be interesting to see if this number has increased over time.</p><h1 id="Awards">Awards</h1><p>Hopefully, this post has shown how easy it is to extract some useful insights from the dewey data, but I didn&apos;t want to sign off before showing how to extract some mostly useless insights.</p><h2 id="Whatchamcallit-Award">Whatchamcallit Award</h2><p>This award goes to the namespace that you just don&apos;t know how to alias. To qualify for this award, the namespace must have been referenced at least 10 times.</p><div class="syntax"><pre>
+<span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">alias-counts</span>
+  <span class="s-exp">(</span><span class="symbol">q</span> <span class="s-exp">{</span><span class="keyword">:select</span> <span class="s-exp">[</span><span class="keyword">:to</span>
+               <span class="s-exp">[</span><span class="s-exp">[</span><span class="keyword">:count</span> <span class="s-exp">[</span><span class="keyword">:distinct</span> <span class="keyword">:alias</span><span class="s-exp">]</span><span class="s-exp">]</span> <span class="keyword">:cdistinct</span><span class="s-exp">]</span>
+               <span class="s-exp">[</span><span class="s-exp">[</span><span class="keyword">:count</span> <span class="keyword">:*</span><span class="s-exp">]</span>
+                <span class="keyword">:total</span><span class="s-exp">]</span>
+               <span class="s-exp">[</span>
+                <span class="s-exp">[</span><span class="s-exp">(</span><span class="core-fn">keyword</span> <span class="string">&quot;/&quot;</span><span class="s-exp">)</span>
+                 <span class="s-exp">[</span><span class="keyword">:*</span> <span class="number">1.0</span> <span class="s-exp">[</span><span class="keyword">:count</span> <span class="s-exp">[</span><span class="keyword">:distinct</span> <span class="keyword">:alias</span><span class="s-exp">]</span><span class="s-exp">]</span><span class="s-exp">]</span>
+                 <span class="s-exp">[</span><span class="keyword">:count</span> <span class="keyword">:*</span><span class="s-exp">]</span><span class="s-exp">]</span>
+                <span class="keyword">:cnorm</span><span class="s-exp">]</span><span class="s-exp">]</span>
+      <span class="keyword">:from</span> <span class="keyword">:namespace-usages</span>
+      <span class="keyword">:order-by</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="keyword">:cnorm</span> <span class="keyword">:desc</span><span class="s-exp">]</span><span class="s-exp">]</span>
+      <span class="keyword">:having</span> <span class="s-exp">[</span><span class="s-exp">[</span><span class="keyword">:&gt;</span> <span class="keyword">:total</span> <span class="number">10</span><span class="s-exp">]</span><span class="s-exp">]</span>
+      <span class="keyword">:group-by</span> <span class="s-exp">[</span><span class="keyword">:to</span><span class="s-exp">]</span><span class="s-exp">}</span><span class="s-exp">)</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="core-fn">first</span> <span class="symbol">alias-counts</span><span class="s-exp">)</span>
+<span class="comment">;; {:namespace-usages/to &quot;clojurewerkz.elastisch.rest.bulk&quot;,
+</span><span class="comment">;;  :cdistinct 6,
+</span><span class="comment">;;  :total 11,
+</span><span class="comment">;;  :cnorm 0.5454545454545454}
+</span></pre></div><p>And the award goes to <code>clojurewerkz.elastisch.rest.bulk</code>! This namespace is used 11 times, but somehow managed to be given 6 different aliases.</p><h2 id="Early-Adopter-Award">Early Adopter Award</h2><p>Clojure recently released 1.12. This release included 8 new vars in <code>clojure.core</code>. The new release is still fresh, but let&apos;s see which new vars are the most popular.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">clojure-added</span>
+  <span class="s-exp">(</span><span class="macro">-&gt;&gt;</span> <span class="s-exp">(</span><span class="core-fn">the-ns</span> <span class="reader-char">&apos;</span><span class="symbol">clojure.core</span><span class="s-exp">)</span>
+       <span class="s-exp">(</span><span class="core-fn">ns-publics</span><span class="s-exp">)</span>
+       <span class="core-fn">vals</span>
+       <span class="s-exp">(</span><span class="core-fn">keep</span> <span class="core-fn">meta</span><span class="s-exp">)</span>
+       <span class="s-exp">(</span><span class="core-fn">filter</span> <span class="reader-char">#</span><span class="s-exp">(</span><span class="core-fn">=</span> <span class="string">&quot;1.12&quot;</span>
+                   <span class="s-exp">(</span><span class="keyword">:added</span> <span class="keyword">%</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+       <span class="s-exp">(</span><span class="core-fn">into</span> <span class="s-exp">{</span><span class="s-exp">}</span>
+             <span class="s-exp">(</span><span class="core-fn">map</span> <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">m</span><span class="s-exp">]</span>
+                    <span class="s-exp">[</span><span class="s-exp">(</span><span class="keyword">:name</span> <span class="symbol">m</span><span class="s-exp">)</span>
+                     <span class="symbol">m</span><span class="s-exp">]</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="symbol">q</span> <span class="s-exp">{</span><span class="keyword">:select</span> <span class="s-exp">[</span><span class="keyword">:name</span> <span class="keyword">:filename</span> <span class="keyword">:repo</span><span class="s-exp">]</span>
+    <span class="keyword">:from</span> <span class="keyword">:var-usages</span>
+    <span class="keyword">:inner-join</span> <span class="s-exp">[</span><span class="keyword">:basis</span> <span class="s-exp">[</span><span class="keyword">:=</span> <span class="keyword">:basis-id</span> <span class="keyword">:basis/id</span><span class="s-exp">]</span><span class="s-exp">]</span>
+    <span class="keyword">:where</span> <span class="s-exp">[</span><span class="keyword">:and</span>
+            <span class="s-exp">[</span><span class="keyword">:in</span> <span class="keyword">:name</span> <span class="s-exp">(</span><span class="core-fn">map</span> <span class="core-fn">str</span> <span class="s-exp">(</span><span class="core-fn">keys</span> <span class="symbol">clojure-added</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">]</span>
+            <span class="s-exp">[</span><span class="keyword">:=</span> <span class="string">&quot;clojure.core&quot;</span> <span class="keyword">:to</span><span class="s-exp">]</span><span class="s-exp">]</span>
+    <span class="keyword">:group-by</span> <span class="s-exp">[</span><span class="keyword">:name</span><span class="s-exp">]</span><span class="s-exp">}</span><span class="s-exp">)</span>
+<span class="comment">;; [{:var-usages/name &quot;*repl*&quot;, :var-usages/filename &quot;src/fdb/core.clj&quot;, :basis/repo &quot;filipesilva/fdb&quot;}]
+</span>
+</pre></div><p>Out of the 8 vars, it seems like <code>clojure.core/*repl*</code> wins the award for first usage in the wild!</p><h1 id="Web-Interface">Web Interface</h1><p>In addition to adding the sqlite dump to the dewey releases, a simple web interface for searching names is available at <a href="https://cloogle.phronemophobic.com/name-search.html">https://cloogle.phronemophobic.com/name-search.html</a>.</p><h1 id="Conclusion">Conclusion</h1><p>Clojure is powerful and succinct. One of the neat consequences is that the Clojure ecosytem is an interesting dataset for data mining. The ecosystem has tools, applications, and libraries that cover a large range of use cases, but the actual volume of code is impressively tractable to analyze.</p></div></div></div></div></div></body></html>

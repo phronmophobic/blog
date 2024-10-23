@@ -18,6 +18,7 @@
             glow.parse
             glow.html
             [glow.colorschemes]
+            [tiara.data :refer [ordered-map ordered-set oset]]
             [hiccup.core :refer [html]
              :as hiccup])
   (:import com.vladsch.flexmark.util.ast.Node
@@ -32,7 +33,7 @@
 
 ;; //options.set(Parser.EXTENSIONS, Arrays.asList(TablesExtension.create(), StrikethroughExtension.create()));
 
-(def POSTS (atom {}))
+(def POSTS (atom (ordered-map)))
 (defmacro defpost [name val]
   `(let [v# (def ~name ~val)]
      (swap! POSTS assoc (:id ~name) ~name)

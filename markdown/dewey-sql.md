@@ -13,7 +13,7 @@ For this post, my goal is to show how the sql dump can be used by doing a bit of
 
 ## Getting Started
 
-To get, started, download the `dewey.sqlite3.sql.gz` file from the [dewey releases](https://github.com/phronmophobic/dewey/releases) page. The sql can be loaded into a fresh sqlite db named `dewey.sqlite` as follows.
+To get started, download the `dewey.sqlite3.sql.gz` file from the [dewey releases](https://github.com/phronmophobic/dewey/releases) page. The sql can be loaded into a fresh sqlite db named `dewey.sqlite` as follows.
 
 ```bash
 ;; note: some systems use zcat instead of gzcat
@@ -113,7 +113,7 @@ First, let's count the number of repos that use Java classes via interop:
 ;; [{:uses-java-classes 9830}]
 ```
 
-There are 9,380 repos that use Java classes which is about 76%. This is actualy higher than expected. Let's see if we can figure out the distribution of class usages by repo.
+There are 9,380 repos that use Java classes which is about 76%. This is actually higher than expected. Let's see if we can figure out the distribution of class usages by repo.
 
 ```clojure
 (def class-usages-by-repo

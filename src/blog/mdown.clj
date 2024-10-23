@@ -793,24 +793,28 @@
         get-val #(.lastModified f)]
     (when (not @running?)
       (reset! running? true)
-      @(future
-         (loop [last-val nil]
-           (let [current-val (get-val)]
-             (when @running?
-               (when (not= current-val last-val)
+      (try
+        @(future
+           (loop [last-val nil]
+             (let [current-val (get-val)]
+               (when @running?
+                 (when (not= current-val last-val)
 
-                 (print "rendering blog...")
-                 (flush)
-                 (try
-                   (render-post! post)
-                   (print " done.\n")
-                   (catch Exception e
-                     (println "error: \n")
-                     (prn e)))
-                 (flush))
+                   (print "rendering blog...")
+                   (flush)
+                   (try
+                     (render-post! post)
+                     (print " done.\n")
+                     (catch Exception e
+                       (println "error: \n")
+                       (prn e)))
+                   (flush))
 
-               (Thread/sleep 500 )
-               (recur current-val))))))))
+                 (Thread/sleep 500 )
+                 (recur current-val)))))
+        (finally
+          (reset! running? false)))
+      nil)))
 
 (defn render-index []
   (let [page-html (blog-page

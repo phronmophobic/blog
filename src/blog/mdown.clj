@@ -19,6 +19,7 @@
             glow.html
             [glow.colorschemes]
             [tiara.data :refer [ordered-map ordered-set oset]]
+            [hiccup.util :as hiccup-util]
             [hiccup.core :refer [html]
              :as hiccup])
   (:import com.vladsch.flexmark.util.ast.Node
@@ -413,23 +414,25 @@
                     (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.MacroClose %))
                     (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.Macro %)))
         viz-id (gensym "viz_")]
-    (str "
+    (hiccup-util/raw-string
+     (str "
 <div id=\"" viz-id "\"></div>
   <script type=\"text/javascript\">
       var yourVlSpec_" viz-id " = " (clojure.string/join (map #(.getChars %) childs))
-         ";
+          ";
       vegaEmbed('#"viz-id "', yourVlSpec_" viz-id ", {actions: false});
-    </script>")))
+    </script>"))))
 
 (defmethod markdown-macro "video" [macro]
   (let [childs (->> (children macro)
                     (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.MacroClose %))
                     (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.Macro %)))
         src (clojure.string/join (map #(.getChars %) childs))]
-    (str
-     "<p><video controls preload=\"none\">
+    (hiccup-util/raw-string
+     (str
+      "<p><video controls preload=\"none\">
   <source src=\""src "\" type=\"video/mp4\" />
-</video></p>")))
+</video></p>"))))
 
 
 (defmethod markdown-macro "vega-embed-edn" [macro]
@@ -441,13 +444,14 @@
         edn-str (clojure.string/join (map #(.getChars %) childs))
         edn (clojure.edn/read-string edn-str)
         vega-spec-json (json/write-str edn)]
-    (str "
+    (hiccup-util/raw-string
+     (str "
 <div id=\"" viz-id "\"></div>
   <script type=\"text/javascript\">
       var yourVlSpec_" viz-id " = " vega-spec-json
-         ";
+          ";
       vegaEmbed('#"viz-id "', yourVlSpec_" viz-id ", {actions: false});
-    </script>")))
+    </script>"))))
 
 (def two-decimal-format (DecimalFormat. "#.##"))
 (defmethod markdown-macro "vega-count-chart" [macro]
@@ -507,13 +511,14 @@
 
         viz-id (gensym "viz_")]
     [:div {:style "width:100%;overflow:scroll;"}
-     (str "
+     (hiccup-util/raw-string
+      (str "
 <div id=\"" viz-id "\"></div>
   <script type=\"text/javascript\">
       var yourVlSpec_" viz-id " = " vega-spec-json
-          ";
+           ";
       vegaEmbed('#"viz-id "', yourVlSpec_" viz-id ", {actions: false});
-    </script>")]))
+    </script>"))]))
 
 
 (extend-type com.vladsch.flexmark.ext.xwiki.macros.Macro

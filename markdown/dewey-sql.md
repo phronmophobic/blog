@@ -244,7 +244,7 @@ About 60% of repos don't use any qualified keywords. That's a bit higher than ex
 
 Hopefully, this post has shown how easy it is to extract some useful insights from the dewey data, but I didn't want to sign off before showing how to extract some mostly useless insights.
 
-## Whatchamcallit Award
+## Whatchamacallit Award
 
 This award goes to the namespace that you just don't know how to alias. To qualify for this award, the namespace must have been referenced at least 10 times.
 

@@ -21,7 +21,8 @@
             [tiara.data :refer [ordered-map ordered-set oset]]
             [hiccup.util :as hiccup-util]
             [hiccup.core :refer [html]
-             :as hiccup])
+             :as hiccup]
+            [clj-rss.core :as rss])
   (:import com.vladsch.flexmark.util.ast.Node
            com.vladsch.flexmark.html.HtmlRenderer
            com.vladsch.flexmark.parser.Parser
@@ -29,8 +30,13 @@
            com.vladsch.flexmark.ext.xwiki.macros.MacroExtension
            com.vladsch.flexmark.util.data.MutableDataSet
            com.phronemophobic.blog.HiccupNode
-           java.text.DecimalFormat))
+           java.text.DecimalFormat
+           [java.time LocalDate ZoneId Instant]))
 
+
+(defn date-to-instant [year month day]
+  (let [local-date (LocalDate/of year month day)]
+    (.toInstant (.atStartOfDay local-date (ZoneId/systemDefault)))))
 
 ;; //options.set(Parser.EXTENSIONS, Arrays.asList(TablesExtension.create(), StrikethroughExtension.create()));
 
@@ -646,6 +652,7 @@
   {:id :dewey-sql
    :title "Dewey SQL"
    :subheading "Analyzing Every Clojure Project with SQL"
+   :pubDate (date-to-instant 2024 10 23)
    :vega? false
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav
@@ -659,6 +666,7 @@
 (defpost clojure-plays-mario
   {:id :mairio
    :title "Clojure Plays Mario"
+   :pubDate (date-to-instant 2023 6 22)
    ;; :subheading ""
    :vega? false
    :nav [:div {:class "container"}
@@ -674,6 +682,7 @@
   {:id :dewey-analysis
    :title "Analyzing Every Clojure Project on Github"
    ;; :subheading ""
+   :pubDate (date-to-instant 2022 9 6)
    :vega? true
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav
@@ -702,6 +711,7 @@
   {:id :what-is-a-ui
    :title "What is a User Interface?"
    :subheading "How to build a functional UI library from scratch: Part I"
+   :pubDate (date-to-instant 2020 11 24)
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav
           [:a.nav-link
@@ -715,6 +725,7 @@
   {:id :ui-model
    :title "Implementing a Functional UI Model"
    :subheading "How to build a functional UI library from scratch: Part II"
+   :pubDate (date-to-instant 2020 12 11)
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav
           [:a.nav-link
@@ -728,6 +739,7 @@
 (defpost reusable-ui-components
   {:id :reusable-ui-components
    :title "Reusable UI Components"
+   :pubDate (date-to-instant 2021 2 22)
    :subheading "How to build a functional UI library from scratch: Part III"
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav
@@ -743,6 +755,7 @@
   {:id :html-tax
    :title "The HTML Tax"
    :subheading "Html is a poor medium for specifying user interfaces"
+   :pubDate (date-to-instant 2020 10 7)
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav
           [:a.nav-link
@@ -756,6 +769,7 @@
   {:id :treemap
    :title "Treemaps are awesome!"
    :subheading "An alternative to pprint for generically visualizing heterogeneous, hierarchical data"
+   :pubDate (date-to-instant 2020 8 14)
    :asset-prefix "treemaps-are-awesome/"
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav
@@ -816,6 +830,32 @@
           (reset! running? false)))
       nil)))
 
+(defn post->rss-item [post]
+  (merge
+   {:title (:title post)
+    :pubDate (:pubDate post)
+    :link (str "https://blog.phronemophobic.com/"
+               (:out post))
+    :guid (str "blog-phronemophobic-" (name (:id post)))}
+   (when-let [description (:subheading post)]
+     {:description description})))
+
+(defn render-rss-feed []
+  (spit
+   "resources/public/rss.xml"
+    
+   (apply
+    rss/channel-xml
+    {:title "Phronemophobic's Blog"
+     :description "A techinical blog mostly about doing fun things with Clojure."
+     :link "https://blog.phronemophobic.com/"}
+
+    (eduction
+     (filter #(get % :index? true))
+     (map post->rss-item)
+
+     (vals @POSTS)))))
+
 (defn render-index []
   (let [page-html (blog-page
                    {:title "Phronemophobic's Blog"
@@ -824,13 +864,23 @@
                                  :when (get post :index? true)]
                              [:div
                               [:a {:href (:out post)}
-                               (:title post)]])]
+                               (:title post)]])
+                           [:hr]
+                           [:footer
+                            [:p
+                             [:a {:href "rss.xml"
+                                  :target "_blank"}
+                              [:img {:src "https://upload.wikimedia.org/wikipedia/commons/4/43/Feed-icon.svg"
+                                    :alt "RSS Feed Icon"
+                                    :style "width: 16px; height 16px; vertical-align:middle;margin-right: 8px;"}]
+                              "RSS feed"]]]]
                     :asset-prefix "/"})
         html-str (html page-html)]
     (spit "resources/public/index.html" html-str)))
 
 (defn render-all! []
   (render-index)
+  (render-rss-feed)
   (run! render-post! (vals @POSTS)))
 
 (defn -main [ & args]

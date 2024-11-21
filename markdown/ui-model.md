@@ -438,7 +438,7 @@ The default implementation of `-bubble` is to simply return the intents unchange
     intents)
 ```
 
-The event function receives events and returns intents. Parent components may alter or ignore events before child components see the event and may alter or ignore intents before they are returned. Bubbling facilitates altering or ignoring the intents being returned by child components. In principle, modifying the outgoing intents could be achieved with `membrane.ui/wrap-on`, but that would require wrapping every event type{{footnote}}Bubbling may be implemented by wrapping all event types in the future. The main consideration is probably performance.{{/footnote}}.
+The event function receives events and returns intents. Parent components may alter or ignore events before child components see the event and may alter or ignore intents before they are returned.{{footnote}}Through the use of `wrap-on`.{{/footnote}} Bubbling facilitates altering or ignoring the intents being returned by child components. In principle, modifying the outgoing intents could be achieved with `membrane.ui/wrap-on`, but that would require wrapping every event type{{footnote}}Bubbling may be implemented by wrapping all event types in the future. The main consideration is probably performance.{{/footnote}}.
 
 
 Other event models also have "bubbling", but membrane's bubbling is different. The return values of event handlers aren't ignored. Functional bubbling is powerful and provides an elegant way to make components more reusable with less code.

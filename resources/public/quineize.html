@@ -1,0 +1,259 @@
+<html lang="en"><head><meta charset="utf-8" /><meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport" /><meta content="Adrian Smith" name="author" /><link href="quineize/favicon.ico" rel="icon" /><title>Simplifying Quines</title><link href="quineize/bootstrap.min.css" rel="stylesheet" /><link href="quineize/blog.css" rel="stylesheet" /><style type="text/css">.syntax pre {
+  background: ;
+}
+
+.syntax pre .definition {
+  color: #00f;
+}
+
+.syntax pre .core-fn {
+  color: #30a;
+}
+
+.syntax pre .variable {
+  color: black;
+}
+
+.syntax pre .number {
+  color: #164;
+}
+
+.syntax pre .s-exp {
+  color: #997;
+}
+
+.syntax pre .special-form {
+  color: #30a;
+}
+
+.syntax pre .string {
+  color: #a11;
+}
+
+.syntax pre .keyword {
+  color: #708;
+}
+
+.syntax pre .macro {
+  color: #05a;
+}
+
+.syntax pre .reader-char {
+  color: #555;
+}
+
+.syntax pre .nil {
+  color: #164;
+}
+
+.syntax pre .comment {
+  color: #a50;
+}
+
+.syntax pre .repeat {
+  color: #f00;
+}
+
+.syntax pre .regex {
+  color: #f50;
+}
+
+.syntax pre .exception {
+  color: #f00;
+}
+
+.syntax pre .boolean {
+  color: #164;
+}
+
+.syntax pre .character {
+  color: #f50;
+}
+
+.syntax pre .conditional {
+  color: #30a;
+} div.syntax { padding: 4px ; background-color: #f8f8f8; margin-bottom: 18px } div.syntax pre { margin-bottom: 0 }</style></head><body><div class="blog-masthead"><div class="container"><nav class="nav blog-nav"><a class="nav-link" href="/">Home</a></nav></div></div><div class="blog-header"><div class="container"><h1 class="blog-title">Simplifying Quines</h1><p class="lead blog-description"></p></div></div><div class="container"><div class="row"><div class="col-sm-8 blog-main"><div class="blog-post"><div><ul><li><a href="#How-to-Make-a-Quine">How to Make a Quine</a></li><ul><li><a href="#Self-Insert">Self Insert</a></li><li><a href="#Self-Insert-Function-Call">Self Insert Function Call</a></li><li><a href="#Self-Insert-with-Print">Self Insert with Print</a></li><li><a href="#Self-Insert-Quine">Self Insert Quine</a></li><li><a href="#Self-Insert-Quine-with-self-insert">Self Insert Quine with `self-insert`</a></li><li><a href="#Generalized-Quineing">Generalized Quineing</a></li><li><a href="#Self-Reflection">Self Reflection</a></li></ul><li><a href="#Bonus-Deriving-the-Y-combinator">Bonus: Deriving the Y-combinator</a></li><ul><li><a href="#Self-Call">Self Call</a></li><li><a href="#Building-Factorial-without-Explicit-Recursion">Building Factorial without Explicit Recursion</a></li><li><a href="#Explanation">Explanation</a></li><li><a href="#Generalized-Recursion-Y-Combinator">Generalized Recursion: Y Combinator</a></li></ul><li><a href="#Conclusion">Conclusion</a></li></ul><p>Posted: December 5, 2025</p><p>A quine is program that outputs its own source. It&apos;s easy to view quines as these special creatures, specifically crafted only for the purpose of reproducing themselves. However, once you understand the trick that makes quines work, it&apos;s fairly trivial to turn <em>any</em> program into a quine. I&apos;m not sure if I never realized that any program could be turned into a quine because I didn&apos;t understand how quines worked or just because I&apos;ve never seen quines that do anything else besides reproduce themselves. To be fair, most programs don&apos;t benefit from adding a giant chunk of code to reproduce themselves.</p><h2 id="How-to-Make-a-Quine">How to Make a Quine</h2><h3 id="Self-Insert">Self Insert</h3><p>To understand how to make a quine, we will first start with a simple function that takes a string (presumably some source code) and inserts a quoted version of itself in the middle.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="core-fn">require</span> <span class="reader-char">&apos;</span><span class="s-exp">[</span><span class="symbol">clojure.java.io</span> <span class="keyword">:as</span> <span class="symbol">io</span><span class="s-exp">]</span>
+         <span class="reader-char">&apos;</span><span class="s-exp">[</span><span class="symbol">clojure.string</span> <span class="keyword">:as</span> <span class="core-fn">str</span><span class="s-exp">]</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="definition">defn</span> <span class="reader-char">^</span><span class="keyword">:private</span> <span class="symbol">escape</span>
+  <span class="string">&quot;Add slashes before double quotes and slashes.&quot;</span>
+  <span class="s-exp">[</span><span class="symbol">s</span><span class="s-exp">]</span>
+  <span class="s-exp">(</span><span class="symbol">str/replace</span> <span class="symbol">s</span> <span class="regex">#&quot;([\&quot;\\])&quot;</span> <span class="string">&quot;\\\\$1&quot;</span> <span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="s-exp">(</span><span class="definition">defn</span> <span class="reader-char">^</span><span class="keyword">:private</span> <span class="symbol">quoted</span>
+  <span class="string">&quot;Escape and surround `s` with double quotes.&quot;</span>
+  <span class="s-exp">[</span><span class="symbol">s</span><span class="s-exp">]</span>
+  <span class="s-exp">(</span><span class="core-fn">str</span> <span class="string">&quot;\&quot;&quot;</span> <span class="s-exp">(</span><span class="symbol">escape</span> <span class="symbol">s</span><span class="s-exp">)</span> <span class="string">&quot;\&quot;&quot;</span><span class="s-exp">)</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="definition">defn</span> <span class="symbol">self-insert</span> <span class="s-exp">[</span><span class="symbol">beg</span> <span class="symbol">end</span><span class="s-exp">]</span>
+  <span class="s-exp">(</span><span class="core-fn">str</span> <span class="symbol">beg</span> <span class="s-exp">(</span><span class="symbol">quoted</span> <span class="symbol">beg</span><span class="s-exp">)</span>
+       <span class="comment">;; this space isn&apos;t necessary,
+</span>       <span class="comment">;; but will make our examples more readable
+</span>       <span class="string">&quot; &quot;</span>
+       <span class="s-exp">(</span><span class="symbol">quoted</span> <span class="symbol">end</span><span class="s-exp">)</span> <span class="symbol">end</span><span class="s-exp">)</span><span class="s-exp">)</span>
+
+</pre></div><p>The function of interest here is <code>self-insert</code>. It takes two strings and inserts a quoted copy of the two strings in the middle. Let&apos;s take a look at an example output.</p><div class="syntax"><pre><span class="core-fn">&gt;</span> <span class="s-exp">(</span><span class="core-fn">println</span> <span class="s-exp">(</span><span class="symbol">self-insert</span> <span class="string">&quot;:hello &quot;</span> <span class="string">&quot; :world&quot;</span><span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="keyword">:hello</span> <span class="string">&quot;:hello &quot;</span> <span class="string">&quot; :world&quot;</span> <span class="keyword">:world</span>
+</pre></div><p>The output for the above example isn&apos;t very interesting, but as you can see, it duplicates the input and inserts the duplicate surrounded by quotes in the middle.</p><h3 id="Self-Insert-Function-Call">Self Insert Function Call</h3><p>Let&apos;s try a more interesting example.</p><div class="syntax"><pre><span class="core-fn">&gt;</span> <span class="s-exp">(</span><span class="core-fn">println</span> <span class="s-exp">(</span><span class="symbol">self-insert</span> <span class="string">&quot;(my-function &quot;</span> <span class="string">&quot;)&quot;</span><span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="s-exp">(</span><span class="symbol">my-function</span> <span class="string">&quot;(my-function &quot;</span> <span class="string">&quot;)&quot;</span><span class="s-exp">)</span>
+</pre></div><p>Since the self insertion point is in the argument position of a function, the output is a function that receives its own quoted source as arguments. Despite some very innocent looking code, you might already get the sense that we&apos;re up to no good. With this trick, we were able to produce a program that calls a function with its own source.</p><h3 id="Self-Insert-with-Print">Self Insert with Print</h3><p>Since a quine is a program that outputs its own source, a straightforward (but incorrect) attempt would be to try the above trick using <code>print</code>.</p><div class="syntax"><pre><span class="core-fn">&gt;</span> <span class="s-exp">(</span><span class="core-fn">println</span> <span class="s-exp">(</span><span class="symbol">self-insert</span> <span class="string">&quot;(print &quot;</span> <span class="string">&quot;)&quot;</span><span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="s-exp">(</span><span class="core-fn">print</span> <span class="string">&quot;(print &quot;</span> <span class="string">&quot;)&quot;</span><span class="s-exp">)</span>
+</pre></div><h3 id="Self-Insert-Quine">Self Insert Quine</h3><p>So close! If the source for our program is <code>(print &quot;(print &quot; &quot;)&quot;)</code>, it&apos;s output would be <code>(print  )</code>. The original program received a copy of its input, but the output of the original program does not receive a copy of its input. However, we know a trick for that...</p><div class="syntax"><pre><span class="core-fn">&gt;</span> <span class="s-exp">(</span><span class="core-fn">println</span> <span class="s-exp">(</span><span class="symbol">self-insert</span> <span class="string">&quot;(println (self-insert &quot;</span> <span class="string">&quot;))&quot;</span><span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="s-exp">(</span><span class="core-fn">println</span> <span class="s-exp">(</span><span class="symbol">self-insert</span> <span class="string">&quot;(println (self-insert &quot;</span> <span class="string">&quot;))&quot;</span><span class="s-exp">)</span><span class="s-exp">)</span>
+</pre></div><p>We did it! We made a quine!</p><h3 id="Self-Insert-Quine-with-self-insert">Self Insert Quine with <code>self-insert</code></h3><p>Unfortunately, it feels a bit like we cheated. Clearly, the <code>self-insert</code> function is doing the majority of the work here, but its source is not included in the quine. However, you may notice that you can add source to the beginning or end of the program without anything breaking. Let&apos;s try a simple example of prepending 42 to our quine just to see what it looks like.</p><div class="syntax"><pre><span class="core-fn">&gt;</span> <span class="number">42</span> <span class="s-exp">(</span><span class="core-fn">println</span> <span class="s-exp">(</span><span class="symbol">self-insert</span> <span class="string">&quot;42 (println (self-insert &quot;</span> <span class="string">&quot;))&quot;</span><span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="number">42</span> <span class="s-exp">(</span><span class="core-fn">println</span> <span class="s-exp">(</span><span class="symbol">self-insert</span> <span class="string">&quot;42 (println (self-insert &quot;</span> <span class="string">&quot;))&quot;</span><span class="s-exp">)</span><span class="s-exp">)</span>
+</pre></div><p>Notice how we added 42 to both the part of the program that will be evaluated as well as the quoted copy. Also note that the quine is still a quine, even though we added a bit of junk to the beginning of our program.</p><p>Ok, now let&apos;s try making the full quine with <code>self-insert</code> included. The only change to our smaller quine is that we prepended the source necessary for <code>self-insert</code>. Just as above, we will prepend the code for <code>self-insert</code> to both the quoted and unquoted copies of the source.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="core-fn">require</span> <span class="reader-char">&apos;</span><span class="s-exp">[</span><span class="symbol">clojure.java.io</span> <span class="keyword">:as</span> <span class="symbol">io</span><span class="s-exp">]</span>
+         <span class="reader-char">&apos;</span><span class="s-exp">[</span><span class="symbol">clojure.string</span> <span class="keyword">:as</span> <span class="core-fn">str</span><span class="s-exp">]</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="definition">defn</span> <span class="reader-char">^</span><span class="keyword">:private</span> <span class="symbol">escape</span>
+  <span class="string">&quot;Add slashes before double quotes and slashes.&quot;</span>
+  <span class="s-exp">[</span><span class="symbol">s</span><span class="s-exp">]</span>
+  <span class="s-exp">(</span><span class="symbol">str/replace</span> <span class="symbol">s</span> <span class="regex">#&quot;([\&quot;\\])&quot;</span> <span class="string">&quot;\\\\$1&quot;</span> <span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="s-exp">(</span><span class="definition">defn</span> <span class="reader-char">^</span><span class="keyword">:private</span> <span class="symbol">quoted</span>
+  <span class="string">&quot;Escape and surround `s` with double quotes.&quot;</span>
+  <span class="s-exp">[</span><span class="symbol">s</span><span class="s-exp">]</span>
+  <span class="s-exp">(</span><span class="core-fn">str</span> <span class="string">&quot;\&quot;&quot;</span> <span class="s-exp">(</span><span class="symbol">escape</span> <span class="symbol">s</span><span class="s-exp">)</span> <span class="string">&quot;\&quot;&quot;</span><span class="s-exp">)</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="definition">defn</span> <span class="symbol">self-insert</span> <span class="s-exp">[</span><span class="symbol">beg</span> <span class="symbol">end</span><span class="s-exp">]</span>
+  <span class="s-exp">(</span><span class="core-fn">str</span> <span class="symbol">beg</span> <span class="s-exp">(</span><span class="symbol">quoted</span> <span class="symbol">beg</span><span class="s-exp">)</span>
+       <span class="comment">;; this space isn&apos;t necessary,
+</span>       <span class="comment">;; but will make our examples more readable
+</span>       <span class="string">&quot; &quot;</span>
+       <span class="s-exp">(</span><span class="symbol">quoted</span> <span class="symbol">end</span><span class="s-exp">)</span> <span class="symbol">end</span><span class="s-exp">)</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="core-fn">print</span> <span class="s-exp">(</span><span class="symbol">self-insert</span> <span class="string">&quot;(require &apos;[clojure.java.io :as io]
+         &apos;[clojure.string :as str])
+
+(defn ^:private escape
+  \&quot;Add slashes before double quotes and slashes.\&quot;
+  [s]
+  (str/replace s #\&quot;([\\\&quot;\\\\])\&quot; \&quot;\\\\\\\\$1\&quot; ))
+(defn ^:private quoted
+  \&quot;Escape and surround `s` with double quotes.\&quot;
+  [s]
+  (str \&quot;\\\&quot;\&quot; (escape s) \&quot;\\\&quot;\&quot;))
+
+(defn self-insert [beg end]
+  (str beg (quoted beg)
+       ;; this space isn&apos;t necessary,
+       ;; but will make our examples more readable
+       \&quot; \&quot;
+       (quoted end) end))
+
+(print (self-insert &quot;</span> <span class="string">&quot;))
+&quot;</span><span class="s-exp">)</span><span class="s-exp">)</span>
+</pre></div><p>The above is a quine with all of the interesting bits included.</p><h3 id="Generalized-Quineing">Generalized Quineing</h3><p>At the very beginning of the post, I said that we can turn <em>any</em> program into a quine. Directly above, we used the fact that we can add any amount of code to the beginning or end of our program to include <code>self-insert</code> as part of quine. Likewise, we can prepend source code that does non quine related things. In fact, we can generalize the recipe for creating a quine by taking our &quot;base quine&quot; and prepending or appending any source we want. See the code on github, <a href="https://github.com/phronmophobic/quineize">quineize</a>.</p><h3 id="Self-Reflection">Self Reflection</h3><p>Hopefully, the above explanation helps demystify the quine, if only a bit. However, seeing all the bits and even understanding the individual bits may help, but it&apos;s not always enough to understand the project as a whole. Now that we <em>how</em> a quine works, I&apos;d like to spend a brief moment trying to give an intuition for <em>why</em> our quine works. To try to understand our quine construction, let&apos;s return back to the <code>self-insert</code> we started with.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="definition">defn</span> <span class="reader-char">^</span><span class="keyword">:private</span> <span class="symbol">escape</span>
+  <span class="string">&quot;Add slashes before double quotes and slashes.&quot;</span>
+  <span class="s-exp">[</span><span class="symbol">s</span><span class="s-exp">]</span>
+  <span class="s-exp">(</span><span class="symbol">str/replace</span> <span class="symbol">s</span> <span class="regex">#&quot;([\&quot;\\])&quot;</span> <span class="string">&quot;\\\\$1&quot;</span> <span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="s-exp">(</span><span class="definition">defn</span> <span class="reader-char">^</span><span class="keyword">:private</span> <span class="symbol">quoted</span>
+  <span class="string">&quot;Escape and surround `s` with double quotes.&quot;</span>
+  <span class="s-exp">[</span><span class="symbol">s</span><span class="s-exp">]</span>
+  <span class="s-exp">(</span><span class="core-fn">str</span> <span class="string">&quot;\&quot;&quot;</span> <span class="s-exp">(</span><span class="symbol">escape</span> <span class="symbol">s</span><span class="s-exp">)</span> <span class="string">&quot;\&quot;&quot;</span><span class="s-exp">)</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="definition">defn</span> <span class="symbol">self-insert</span> <span class="s-exp">[</span><span class="symbol">beg</span> <span class="symbol">end</span><span class="s-exp">]</span>
+  <span class="s-exp">(</span><span class="core-fn">str</span> <span class="symbol">beg</span> <span class="s-exp">(</span><span class="symbol">quoted</span> <span class="symbol">beg</span><span class="s-exp">)</span>
+       <span class="comment">;; this space isn&apos;t necessary,
+</span>       <span class="comment">;; but will make our examples more readable
+</span>       <span class="string">&quot; &quot;</span>
+       <span class="s-exp">(</span><span class="symbol">quoted</span> <span class="symbol">end</span><span class="s-exp">)</span> <span class="symbol">end</span><span class="s-exp">)</span><span class="s-exp">)</span>
+</pre></div><p>The first observation to note is that <code>self-insert</code> creates a full copy of the source and that the extra copy is &quot;quoted&quot;. &quot;Quoted&quot; in this context means to wrap the contents in double quotes, (note: this is not the same as <code>clojure.core/quote</code>, although the ideas are related). The contents are also escaped to make a proper string in case the quoted content has double quotes or backslashes. The implementation for quoting is so trivial that it can be easy to overlook that the concept of quoting is quite crucial to the whole enterprise. Quoted contents do not get immediately evaluated, but are saved for future use.</p><p>In essence, <code>self-insert</code> keeps the original source which will be evaluated and inserts a new copy that can be used for making future copies. At first, it can feel like a quine is materializing out of the void, but I think it&apos;s easier to think of a quine as two copies of a program. One copy to be evaluated and one copy that can be used to make the next program. Each time the full program is run, it runs one copy and uses the other unevaluated to copy to make two new copies (one copy to run and another to make future copies).</p><p>Another curious feature of <code>self-insert</code> is that it takes two arguments, <code>beg</code> and <code>end</code>. The insertion of the quoted contents happens in the middle. This is really only necessary because we want to pass a quoted contents of program to our program</p><h2 id="Bonus-Deriving-the-Y-combinator">Bonus: Deriving the Y-combinator</h2><p>This idea of passing a copy of a program to itself is a powerful one. To better understand the idea, we&apos;ll implement another curiosity from computer science, the y combinator. The y combinator can be used to implement recursion without explicit recursive calls. To illustrate, let&apos;s see an example using the well known recursive function, <code>factorial</code>.</p><div class="syntax"><pre>
+<span class="s-exp">(</span><span class="definition">defn</span> <span class="symbol">factorial*</span> <span class="s-exp">[</span><span class="symbol">f</span> <span class="symbol">n</span><span class="s-exp">]</span>
+  <span class="s-exp">(</span><span class="special-form">if</span> <span class="s-exp">(</span><span class="core-fn">pos?</span> <span class="symbol">n</span><span class="s-exp">)</span>
+    <span class="s-exp">(</span><span class="core-fn">*</span> <span class="symbol">n</span> <span class="s-exp">(</span><span class="symbol">f</span> <span class="s-exp">(</span><span class="core-fn">dec</span> <span class="symbol">n</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+    <span class="number">1</span><span class="s-exp">)</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">factorial</span> <span class="s-exp">(</span><span class="symbol">y-combinator</span> <span class="symbol">factorial*</span><span class="s-exp">)</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="symbol">factorial</span> <span class="number">5</span><span class="s-exp">)</span>
+<span class="comment">;; 120
+</span>
+</pre></div><p>In this example, <code>factorial*</code> doesn&apos;t explicitly recur, but instead, it expects an argument, <code>f</code> that can be used to make recursive calls to <code>factorial*</code>. The actual factorial function is created by passing <code>factorial&apos;</code> to the <code>y-combinator</code>. The <code>y-combinator</code> takes <code>factorial*</code> and fills in the first argument, <code>f</code>, so that <code>factorial*</code> can make recursive calls.</p><h3 id="Self-Call">Self Call</h3><p>Similar to our quine example, we&apos;re going to start with a simple function. This time, it will be called <code>self-call</code>.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="definition">defmacro</span> <span class="symbol">self-call</span> <span class="s-exp">[</span><span class="symbol">f</span><span class="s-exp">]</span>
+  <span class="reader-char">`</span><span class="s-exp">(</span><span class="reader-char">~</span><span class="symbol">f</span> <span class="reader-char">~</span><span class="symbol">f</span><span class="s-exp">)</span><span class="s-exp">)</span>
+</pre></div><p>Instead of a function that inserts a copy of its source as in our quine example, we&apos;re instead going to work with a function that receives a copy of itself. Let&apos;s see a simple example.</p><div class="syntax"><pre><span class="core-fn">&gt;</span> <span class="s-exp">(</span><span class="core-fn">macroexpand-1</span> <span class="reader-char">&apos;</span><span class="s-exp">(</span><span class="symbol">self-call</span> <span class="core-fn">identity</span><span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="s-exp">(</span><span class="core-fn">identity</span> <span class="core-fn">identity</span><span class="s-exp">)</span>
+</pre></div><p>Not a very interesting example, but it&apos;s a start. We will slowly work our way to the y-combinator, but first we&apos;re going to try a slightly simpler example, writing a version of factorial without explicit recursion.</p><h3 id="Building-Factorial-without-Explicit-Recursion">Building Factorial without Explicit Recursion</h3><p>Goal: <strong>write a function that receives a copy of itself and returns the factorial function.</strong></p><p>We&apos;ll go step by step. As we go, we&apos;re going to leave &quot;holes&quot; to fill in later which we will denote with &quot;<code>...</code>&quot;.</p><p>Given our goal, we know that our function will take a function as its argument, so let&apos;s start there.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">factorial</span>
+  <span class="s-exp">(</span><span class="symbol">self-call</span>
+   <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">f</span><span class="s-exp">]</span>
+     <span class="symbol">...</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+</pre></div><p>Next, we&apos;ll have our function return a function that takes an integer.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">factorial</span>
+  <span class="s-exp">(</span><span class="symbol">self-call</span>
+   <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">f</span><span class="s-exp">]</span>
+     <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">n</span><span class="s-exp">]</span>
+       <span class="symbol">...</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+</pre></div><p>Now, let&apos;s fill in a bit of the implementation of factorial.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">factorial</span>
+  <span class="s-exp">(</span><span class="symbol">self-call</span>
+   <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">f</span><span class="s-exp">]</span>
+     <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">n</span><span class="s-exp">]</span>
+       <span class="s-exp">(</span><span class="special-form">if</span> <span class="s-exp">(</span><span class="core-fn">pos?</span> <span class="symbol">n</span><span class="s-exp">)</span>
+         <span class="s-exp">(</span><span class="core-fn">*</span> <span class="symbol">n</span> <span class="s-exp">(</span><span class="symbol">...</span> <span class="s-exp">(</span><span class="core-fn">dec</span> <span class="symbol">n</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+         <span class="number">1</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+</pre></div><p>Ok, now the tricky bit. The last hole to fill in is the &quot;recursive&quot; call to our factorial function. Where are we going to get our factorial function? Remember, by definition, we are writing &quot;a function that receives a copy of itself and returns the factorial function.&quot; If we believe ourselves, then we should be able to get a factorial function by calling our input, <code>f</code>, with itself. Let&apos;s try.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">factorial</span>
+  <span class="s-exp">(</span><span class="symbol">self-call</span>
+   <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">f</span><span class="s-exp">]</span>
+     <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">n</span><span class="s-exp">]</span>
+       <span class="s-exp">(</span><span class="special-form">if</span> <span class="s-exp">(</span><span class="core-fn">pos?</span> <span class="symbol">n</span><span class="s-exp">)</span>
+         <span class="s-exp">(</span><span class="core-fn">*</span> <span class="symbol">n</span> <span class="s-exp">(</span><span class="s-exp">(</span><span class="symbol">f</span> <span class="symbol">f</span><span class="s-exp">)</span> <span class="s-exp">(</span><span class="core-fn">dec</span> <span class="symbol">n</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+         <span class="number">1</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="symbol">factorial</span> <span class="number">3</span><span class="s-exp">)</span> <span class="comment">;; 6
+</span><span class="s-exp">(</span><span class="symbol">factorial</span> <span class="number">5</span><span class="s-exp">)</span> <span class="comment">;; 120
+</span><span class="s-exp">(</span><span class="symbol">factorial</span> <span class="number">9</span><span class="s-exp">)</span> <span class="comment">;; 362880
+</span></pre></div><p>It worked! If you&apos;re like me, the fact that this actually works seems suspicious. Let&apos;s do a little more investigation to try to what is heck is actually happening. First let&apos;s briefly take a look at the macroexpanded version.</p><div class="syntax"><pre><span class="core-fn">&gt;</span> <span class="s-exp">(</span><span class="core-fn">macroexpand-1</span> <span class="reader-char">&apos;</span><span class="s-exp">(</span><span class="symbol">self-call</span>
+                   <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">f</span><span class="s-exp">]</span>
+                     <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">n</span><span class="s-exp">]</span>
+                       <span class="s-exp">(</span><span class="special-form">if</span> <span class="s-exp">(</span><span class="core-fn">pos?</span> <span class="symbol">n</span><span class="s-exp">)</span>
+                         <span class="s-exp">(</span><span class="core-fn">*</span> <span class="symbol">n</span> <span class="s-exp">(</span><span class="s-exp">(</span><span class="symbol">f</span> <span class="symbol">f</span><span class="s-exp">)</span> <span class="s-exp">(</span><span class="core-fn">dec</span> <span class="symbol">n</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+                         <span class="number">1</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+<span class="s-exp">(</span><span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">f</span><span class="s-exp">]</span>
+   <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">n</span><span class="s-exp">]</span>
+     <span class="s-exp">(</span><span class="special-form">if</span> <span class="s-exp">(</span><span class="core-fn">pos?</span> <span class="symbol">n</span><span class="s-exp">)</span>
+       <span class="s-exp">(</span><span class="core-fn">*</span> <span class="symbol">n</span> <span class="s-exp">(</span><span class="s-exp">(</span><span class="symbol">f</span> <span class="symbol">f</span><span class="s-exp">)</span> <span class="s-exp">(</span><span class="core-fn">dec</span> <span class="symbol">n</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+       <span class="number">1</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+ <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">f</span><span class="s-exp">]</span>
+   <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">n</span><span class="s-exp">]</span>
+     <span class="s-exp">(</span><span class="special-form">if</span> <span class="s-exp">(</span><span class="core-fn">pos?</span> <span class="symbol">n</span><span class="s-exp">)</span>
+       <span class="s-exp">(</span><span class="core-fn">*</span> <span class="symbol">n</span> <span class="s-exp">(</span><span class="s-exp">(</span><span class="symbol">f</span> <span class="symbol">f</span><span class="s-exp">)</span> <span class="s-exp">(</span><span class="core-fn">dec</span> <span class="symbol">n</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+       <span class="number">1</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+</pre></div><p>The function is indeed getting a copy of itself. It&apos;s possible to evaluate what happens step by step to verify that it does work, but I&apos;ve personally never felt like that helps me understand why it works.</p><h3 id="Explanation">Explanation</h3><p>To understand what&apos;s happening here, let&apos;s think back to our quine example. In the quine example, we had two copies of our program, one to be evaluated and an extra quoted copy that could be used for making future copies. Likewise, in this example, we have a function that will be invoked now and a copy of the same function that can be invoked later to make future copies. Each recursive call invokes one copy and passes along another function that can be invoked later.</p><p>I do think the y-combinator example is harder to grok than the quine example. Don&apos;t worry if it doesn&apos;t make much sense at first glance.</p><h3 id="Generalized-Recursion-Y-Combinator">Generalized Recursion: Y Combinator</h3><p>Anyway, just like we could generalize the process of making quines so that any program could be turned into a quine, we can also generalize our solution for making factorial recursive so that we can make any function recursive.</p><p>Before we write the y combinator, let&apos;s first do some local variable renaming that will make our code more readable later.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">factorial</span>
+  <span class="s-exp">(</span><span class="symbol">self-call</span>
+   <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">make-recursive</span><span class="s-exp">]</span>
+     <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">n</span><span class="s-exp">]</span>
+       <span class="s-exp">(</span><span class="special-form">if</span> <span class="s-exp">(</span><span class="core-fn">pos?</span> <span class="symbol">n</span><span class="s-exp">)</span>
+         <span class="s-exp">(</span><span class="core-fn">*</span> <span class="symbol">n</span> <span class="s-exp">(</span><span class="s-exp">(</span><span class="symbol">make-recursive</span> <span class="symbol">make-recursive</span><span class="s-exp">)</span> <span class="s-exp">(</span><span class="core-fn">dec</span> <span class="symbol">n</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+         <span class="number">1</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+</pre></div><p>The only thing we changed is that we renamed <code>f</code> to <code>make-recursive</code>. Let&apos;s also remove the specifics of factorial.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="symbol">self-call</span>
+ <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">make-recursive</span><span class="s-exp">]</span>
+   <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="reader-char">&amp;</span> <span class="symbol">args</span><span class="s-exp">]</span>
+     <span class="symbol">...</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+</pre></div><p>The above removed the factorial specifics and we changed the arguments of the returned function to be a generic list of args. Our y combinator function will take a function as an argument, so let&apos;s add that.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">y-combinator</span>
+  <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">f</span><span class="s-exp">]</span>
+    <span class="s-exp">(</span><span class="symbol">self-call</span>
+     <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">make-recursive</span><span class="s-exp">]</span>
+       <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="reader-char">&amp;</span> <span class="symbol">args</span><span class="s-exp">]</span>
+         <span class="symbol">...</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+</pre></div><p>Now, we&apos;ll have the returned function call the original function and pass the recursive function as its first argument.</p><div class="syntax"><pre><span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">y-combinator</span>
+  <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">f</span><span class="s-exp">]</span>
+    <span class="s-exp">(</span><span class="symbol">self-call</span>
+     <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">make-recursive</span><span class="s-exp">]</span>
+       <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="reader-char">&amp;</span> <span class="symbol">args</span><span class="s-exp">]</span>
+         <span class="s-exp">(</span><span class="core-fn">apply</span> <span class="symbol">f</span> <span class="s-exp">(</span><span class="symbol">make-recursive</span> <span class="symbol">make-recursive</span><span class="s-exp">)</span> <span class="symbol">args</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+</pre></div><p>That&apos;s it!</p><div class="syntax"><pre>
+<span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">y-combinator</span>
+  <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">f</span><span class="s-exp">]</span>
+    <span class="s-exp">(</span><span class="symbol">self-call</span>
+     <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="symbol">make-recursive</span><span class="s-exp">]</span>
+       <span class="s-exp">(</span><span class="special-form">fn</span> <span class="s-exp">[</span><span class="reader-char">&amp;</span> <span class="symbol">args</span><span class="s-exp">]</span>
+         <span class="s-exp">(</span><span class="core-fn">apply</span> <span class="symbol">f</span> <span class="s-exp">(</span><span class="symbol">make-recursive</span> <span class="symbol">make-recursive</span><span class="s-exp">)</span> <span class="symbol">args</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="definition">defn</span> <span class="symbol">factorial*</span> <span class="s-exp">[</span><span class="symbol">f</span> <span class="symbol">n</span><span class="s-exp">]</span>
+  <span class="s-exp">(</span><span class="special-form">if</span> <span class="s-exp">(</span><span class="core-fn">pos?</span> <span class="symbol">n</span><span class="s-exp">)</span>
+    <span class="s-exp">(</span><span class="core-fn">*</span> <span class="symbol">n</span> <span class="s-exp">(</span><span class="symbol">f</span> <span class="s-exp">(</span><span class="core-fn">dec</span> <span class="symbol">n</span><span class="s-exp">)</span><span class="s-exp">)</span><span class="s-exp">)</span>
+    <span class="number">1</span><span class="s-exp">)</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="special-form">def</span> <span class="symbol">factorial</span> <span class="s-exp">(</span><span class="symbol">y-combinator</span> <span class="symbol">factorial*</span><span class="s-exp">)</span><span class="s-exp">)</span>
+
+<span class="s-exp">(</span><span class="symbol">factorial</span> <span class="number">3</span><span class="s-exp">)</span> <span class="comment">;; 6
+</span><span class="s-exp">(</span><span class="symbol">factorial</span> <span class="number">5</span><span class="s-exp">)</span> <span class="comment">;; 120
+</span><span class="s-exp">(</span><span class="symbol">factorial</span> <span class="number">9</span><span class="s-exp">)</span> <span class="comment">;; 362880
+</span>
+</pre></div><h2 id="Conclusion">Conclusion</h2><p>Both quines and the y-combinator are examples of programs that receive copies of themselves. It&apos;s easy to get lost in the mechanics of how these curiosities work rather than thinking about what it means for program to receive a copy of itself. Once you realize what it means for a program to receive a copy of itself, new possibilities can emerge!</p></div></div></div></div></div></body></html>

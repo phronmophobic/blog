@@ -648,6 +648,22 @@
                  "Code on Github"]]]
    :src "markdown/functional-ui.md"
    :out "functional-ui.html"})
+
+(defpost quineize
+  {:id :quineize
+   :title "Simplifying Quines"
+   ;; :subheading "lksadjf"
+   :pubDate (date-to-instant 2025 12 5)
+   :vega? false
+   :nav [:div {:class "container"}
+         [:nav.nav.blog-nav
+          [:a.nav-link
+           {:href "/"}
+           "Home"]]]
+   :asset-prefix "quineize/"
+   :src "markdown/quineize.md"
+   :out "quineize.html"})
+
 (defpost dewey-sql
   {:id :dewey-sql
    :title "Dewey SQL"

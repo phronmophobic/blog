@@ -63,7 +63,7 @@ Since a quine is a program that outputs its own source, a straightforward (but i
 
 ### Self Insert Quine
 
-So close! If the source for our program is `(print "(print " ")")`, it's output would be `(print  )`. The original program received a copy of its input, but the output of the original program does not receive a copy of its input. However, we know a trick for that...
+So close! If the source for our program is `(print "(print " ")")`, it's output would be `(print  )`. The original program received a copy of its source, but the output of the original program does not receive a copy of its source. However, we know a trick for that...
 
 ```clojure
 > (println (self-insert "(println (self-insert " "))"))

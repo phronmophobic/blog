@@ -50,7 +50,7 @@ Let's try a more interesting example.
 (my-function "(my-function " ")")
 ```
 
-Since the self insertion point is in the argument position of a function, the output is a function that receives its own quoted source as arguments. Despite some very innocent looking code, you might already get the sense that we're up to no good. With this trick, we were able to produce a program that calls a function with its own source.
+Since the self insertion point is in the argument position of a function, the output is a function that receives its own quoted source as arguments. Despite some very innocent looking code, you might already get the sense that we're up to no good. With this trick, we were able to produce **a program that calls a function with its own source**.
 
 ### Self Insert with Print
 
@@ -362,6 +362,8 @@ That's it!
 (factorial 9) ;; 362880
 
 ```
+
+You may notice that our version of the y combinator looks slightly different than the version you'll probably find in textbooks and wikipedia. The main reason is that the textbook versions are usually in a context where every function is curried. However, it's conceptually important to note that the y combinator isn't unique, there are infinitely many! As an exercise, try to write `fibonacci` using `self-call`.
 
 ## Conclusion
 

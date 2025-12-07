@@ -2,7 +2,7 @@
 
 Posted: December 7, 2025
 
-A quine is program that outputs its own source. It's easy to view quines as these special creatures, specially crafted only for the purpose of reproducing themselves. However, once you understand the trick that makes quines work, it's fairly trivial to turn _any_ program into a quine. I'm not sure if I never realized that any program could be turned into a quine because I didn't understand how quines worked or just because I've never seen quines that do anything else besides reproduce themselves. To be fair, most programs don't benefit from adding a giant chunk of code to reproduce themselves.
+A quine is a program that outputs its own source. It's easy to view quines as these special creatures, crafted only for the purpose of reproducing themselves. However, once you understand the trick that makes quines work, it's fairly trivial to turn _any_ program into a quine. I'm not sure if I never realized that any program could be turned into a quine because I didn't understand how quines worked or just because I've never seen quines that do anything else besides reproduce themselves. To be fair, most programs don't benefit from adding a giant chunk of code to reproduce themselves.
 
 ## How to Make a Quine
 
@@ -130,13 +130,13 @@ Ok, now let's try making the full quine with `self-insert` included. The only ch
 
 The above is a quine with all of the interesting bits included.
 
-### Generalized Quineing
+### Generalized Quining
 
 At the very beginning of the post, I said that we can turn _any_ program into a quine. Directly above, we used the fact that we can add any amount of code to the beginning or end of our program to include `self-insert` as part of quine. Likewise, we can prepend source code that does non quine related things. In fact, we can generalize the recipe for creating a quine by taking our "base quine" and prepending or appending any source we want. See the code on github, [quineize](https://github.com/phronmophobic/quineize).
 
 ### Self Reflection
 
-Hopefully, the above explanation helps demystify the quine, if only a bit. However, seeing all the bits and even understanding the individual bits may help, but it's not always enough to understand the project as a whole. Now that we _how_ a quine works, I'd like to spend a brief moment trying to give an intuition for _why_ our quine works. To try to understand our quine construction, let's return back to the `self-insert` we started with.
+Hopefully, the above explanation helps demystify the quine, if only a bit. However, seeing all the bits and even understanding the individual bits may help, but it's not always enough to understand the project as a whole. Now that we know _how_ a quine works, I'd like to spend a brief moment trying to give an intuition for _why_ our quine works. To try to understand our quine construction, let's return back to the `self-insert` we started with.
 
 ```clojure
 (defn ^:private escape
@@ -156,7 +156,7 @@ Hopefully, the above explanation helps demystify the quine, if only a bit. Howev
        (quoted end) end))
 ```
 
-The first observation to note is that `self-insert` creates a full copy of the source and that the extra copy is "quoted". "Quoted" in this context means to wrap the contents in double quotes, (note: this is not the same as `clojure.core/quote`, although the ideas are related). The contents are also escaped to make a proper string in case the quoted content has double quotes or backslashes. The implementation for quoting is so trivial that it can be easy to overlook that the concept of quoting is quite crucial to the whole enterprise. Quoted contents do not get immediately evaluated, but are saved for future use.
+The first observation to note is that `self-insert` creates a full copy of the source and that the extra copy is "quoted". "Quoted" in this context means to wrap the contents in double quotes (note: this is not the same as `clojure.core/quote`, although the ideas are related). The contents are also escaped to make a proper string in case the quoted content has double quotes or backslashes. The implementation for quoting is so trivial that it's easy to overlook that the concept of quoting is quite crucial to the whole enterprise. Quoted contents do not get immediately evaluated, but are saved for future use.
 
 In essence, `self-insert` keeps the original source which will be evaluated and inserts a new copy that can be used for making future copies. At first, it can feel like a quine is materializing out of the void, but I think it's easier to think of a quine as two copies of a program. One copy to be evaluated and one copy that can be used to print the next program's source. Each time the full program is run, it runs one copy and uses the other unevaluated to copy to make two new copies (one copy to run and another to make future copies).
 
@@ -168,7 +168,7 @@ To solve this, you can introduce a middle section that contains the beginning an
 
 You may be wondering why `self-insert` takes two arguments instead of one. This will be left as an exercise for the reader. You can either try to reason it out or clone [quineize](https://github.com/phronmophobic/quineize) and play with `self-insert` yourself.
 
-## Bonus: Deriving the Y-combinator
+## Bonus: Deriving the Y Combinator
 
 This idea of passing a copy of a program to itself is a powerful one. To better understand the idea, we'll implement another curiosity from computer science, the y combinator. The y combinator can be used to implement recursion without explicit recursive calls. To illustrate, let's see an example using the well known recursive function, `factorial`.
 
@@ -204,7 +204,7 @@ Instead of a function that inserts a copy of its source as in our quine example,
 (identity identity)
 ```
 
-Not a very interesting example, but it's a start. We will slowly work our way to the y-combinator, but first we're going to try a slightly simpler example, writing a version of factorial without explicit recursion.
+Not a very interesting example, but it's a start. We will slowly work our way to the y combinator, but first we're going to try a slightly simpler example, writing a version of factorial without explicit recursion.
 
 
 
@@ -263,7 +263,7 @@ Ok, now the tricky bit. The last hole to fill in is the "recursive" call to our 
 (factorial 9) ;; 362880
 ```
 
-It worked! If you're like me, the fact that this actually works seems suspicious. Let's do a little more investigation to try to what is heck is actually happening. First, let's briefly take a look at the macroexpanded version.
+It worked! If you're like me, the fact that this actually works seems suspicious. Let's do a little more investigation to try to understand what the heck is actually happening. First, let's briefly take a look at the macroexpanded version.
 
 ```clojure
 > (macroexpand-1 '(self-call
@@ -289,7 +289,7 @@ The function is indeed getting a copy of itself. It's possible to evaluate what 
 
 To understand what's happening here, let's think back to our quine example. In the quine example, we had two copies of our program, one to be evaluated and an extra quoted copy that could be used for making future copies. Likewise, in this example, we have a function that will be invoked now and a copy of the same function that can be invoked later to make future copies. Each recursive call invokes one copy and passes along another function that can be invoked later.
 
-I do think the y-combinator example is harder to grok than the quine example. Don't worry if it doesn't make much sense at first glance.
+I do think the y combinator example is harder to grok than the quine example. Don't worry if it doesn't make much sense at first glance.
 
 ### Generalized Recursion: Y Combinator
 
@@ -365,6 +365,6 @@ That's it!
 
 ## Conclusion
 
-Both quines and the y-combinator are examples of programs that receive copies of themselves. It's easy to get lost in the mechanics of how these curiosities work rather than thinking about what it means for program to receive a copy of itself. Once you realize what it means for a program to receive a copy of itself, new possibilities can emerge!
+Both quines and the y combinator are examples of programs that receive copies of themselves. It's easy to get lost in the mechanics of how these curiosities work rather than thinking about what it means for a program to receive a copy of itself. Once you realize what it means for a program to receive a copy of itself, new possibilities can emerge!
 
 

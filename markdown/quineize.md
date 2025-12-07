@@ -1,6 +1,6 @@
 {{table-of-contents/}}
 
-Posted: December 5, 2025
+Posted: December 7, 2025
 
 A quine is program that outputs its own source. It's easy to view quines as these special creatures, specially crafted only for the purpose of reproducing themselves. However, once you understand the trick that makes quines work, it's fairly trivial to turn _any_ program into a quine. I'm not sure if I never realized that any program could be turned into a quine because I didn't understand how quines worked or just because I've never seen quines that do anything else besides reproduce themselves. To be fair, most programs don't benefit from adding a giant chunk of code to reproduce themselves.
 

@@ -653,7 +653,7 @@
   {:id :quineize
    :title "Simplifying Quines"
    :subheading "Quines aren't special"
-   :pubDate (date-to-instant 2025 12 5)
+   :pubDate (date-to-instant 2025 12 7)
    :vega? false
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav

@@ -652,7 +652,7 @@
 (defpost quineize
   {:id :quineize
    :title "Simplifying Quines"
-   ;; :subheading "lksadjf"
+   :subheading "Quines aren't special"
    :pubDate (date-to-instant 2025 12 5)
    :vega? false
    :nav [:div {:class "container"}

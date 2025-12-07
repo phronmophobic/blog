@@ -2,7 +2,7 @@
 
 Posted: December 5, 2025
 
-A quine is program that outputs its own source. It's easy to view quines as these special creatures, specifically crafted only for the purpose of reproducing themselves. However, once you understand the trick that makes quines work, it's fairly trivial to turn _any_ program into a quine. I'm not sure if I never realized that any program could be turned into a quine because I didn't understand how quines worked or just because I've never seen quines that do anything else besides reproduce themselves. To be fair, most programs don't benefit from adding a giant chunk of code to reproduce themselves.
+A quine is program that outputs its own source. It's easy to view quines as these special creatures, specially crafted only for the purpose of reproducing themselves. However, once you understand the trick that makes quines work, it's fairly trivial to turn _any_ program into a quine. I'm not sure if I never realized that any program could be turned into a quine because I didn't understand how quines worked or just because I've never seen quines that do anything else besides reproduce themselves. To be fair, most programs don't benefit from adding a giant chunk of code to reproduce themselves.
 
 ## How to Make a Quine
 
@@ -158,9 +158,15 @@ Hopefully, the above explanation helps demystify the quine, if only a bit. Howev
 
 The first observation to note is that `self-insert` creates a full copy of the source and that the extra copy is "quoted". "Quoted" in this context means to wrap the contents in double quotes, (note: this is not the same as `clojure.core/quote`, although the ideas are related). The contents are also escaped to make a proper string in case the quoted content has double quotes or backslashes. The implementation for quoting is so trivial that it can be easy to overlook that the concept of quoting is quite crucial to the whole enterprise. Quoted contents do not get immediately evaluated, but are saved for future use.
 
-In essence, `self-insert` keeps the original source which will be evaluated and inserts a new copy that can be used for making future copies. At first, it can feel like a quine is materializing out of the void, but I think it's easier to think of a quine as two copies of a program. One copy to be evaluated and one copy that can be used to make the next program. Each time the full program is run, it runs one copy and uses the other unevaluated to copy to make two new copies (one copy to run and another to make future copies).
+In essence, `self-insert` keeps the original source which will be evaluated and inserts a new copy that can be used for making future copies. At first, it can feel like a quine is materializing out of the void, but I think it's easier to think of a quine as two copies of a program. One copy to be evaluated and one copy that can be used to print the next program's source. Each time the full program is run, it runs one copy and uses the other unevaluated to copy to make two new copies (one copy to run and another to make future copies).
 
-Another curious feature of `self-insert` is that it takes two arguments, `beg` and `end`. The insertion of the quoted contents happens in the middle. This is really only necessary because we want to pass a quoted contents of program to our program
+### Beginning and end
+
+Another way to think about building a quine is to divide the program into the beginning and end. The beginning can't contain itself and similarly, the end can't contain itself. The beginning could contain the end, but then the end would have to also contain the beginning, which also doesn't work.
+
+To solve this, you can introduce a middle section that contains the beginning and end. This is exactly what `self-insert` does. Crucially, the middle section must be fully derived from the beginning and end portions of the program source.
+
+You may be wondering why `self-insert` takes two arguments instead of one. This will be left as an exercise for the reader. You can either try to reason it out or clone [quineize](https://github.com/phronmophobic/quineize) and play with `self-insert` yourself.
 
 ## Bonus: Deriving the Y-combinator
 
@@ -180,7 +186,7 @@ This idea of passing a copy of a program to itself is a powerful one. To better 
 
 ```
 
-In this example, `factorial*` doesn't explicitly recur, but instead, it expects an argument, `f` that can be used to make recursive calls to `factorial*`. The actual factorial function is created by passing `factorial'` to the `y-combinator`. The `y-combinator` takes `factorial*` and fills in the first argument, `f`, so that `factorial*` can make recursive calls.
+In this example, `factorial*` doesn't explicitly recur, but instead, it expects an argument, `f` that can be used to make recursive calls to `factorial*`. The actual factorial function is created by passing `factorial*` to the `y-combinator`. The `y-combinator` takes `factorial*` and fills in the first argument, `f`, so that `factorial*` can make recursive calls.
 
 ### Self Call
 
@@ -257,7 +263,7 @@ Ok, now the tricky bit. The last hole to fill in is the "recursive" call to our 
 (factorial 9) ;; 362880
 ```
 
-It worked! If you're like me, the fact that this actually works seems suspicious. Let's do a little more investigation to try to what is heck is actually happening. First let's briefly take a look at the macroexpanded version.
+It worked! If you're like me, the fact that this actually works seems suspicious. Let's do a little more investigation to try to what is heck is actually happening. First, let's briefly take a look at the macroexpanded version.
 
 ```clojure
 > (macroexpand-1 '(self-call

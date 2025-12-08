@@ -11,8 +11,7 @@ A quine is a program that outputs its own source. It's easy to view quines as th
 To understand how to make a quine, we will first start with a simple function that takes a string (presumably some source code) and inserts a quoted version of itself in the middle.
 
 ```clojure
-(require '[clojure.java.io :as io]
-         '[clojure.string :as str])
+(require '[clojure.string :as str])
 
 (defn ^:private escape
   "Add slashes before double quotes and slashes."
@@ -35,7 +34,7 @@ To understand how to make a quine, we will first start with a simple function th
 The function of interest here is `self-insert`. It takes two strings and inserts a quoted copy of the two strings in the middle. Let's take a look at an example output.
 
 ```clojure
-> (println (self-insert ":hello " " :world"))
+> (print (self-insert ":hello " " :world"))
 :hello ":hello " " :world" :world
 ```
 
@@ -46,7 +45,7 @@ The output for the above example isn't very interesting, but as you can see, it 
 Let's try a more interesting example.
 
 ```clojure
-> (println (self-insert "(my-function " ")"))
+> (print (self-insert "(my-function " ")"))
 (my-function "(my-function " ")")
 ```
 
@@ -57,7 +56,7 @@ Since the self insertion point is in the argument position of a function, the ou
 Since a quine is a program that outputs its own source, a straightforward (but incorrect) attempt would be to try the above trick using `print`.
 
 ```clojure
-> (println (self-insert "(print " ")"))
+> (print (self-insert "(print " ")"))
 (print "(print " ")")
 ```
 
@@ -66,8 +65,8 @@ Since a quine is a program that outputs its own source, a straightforward (but i
 So close! If the source for our program is `(print "(print " ")")`, it's output would be `(print  )`. The original program received a copy of its source, but the output of the original program does not receive a copy of its source. However, we know a trick for that...
 
 ```clojure
-> (println (self-insert "(println (self-insert " "))"))
-(println (self-insert "(println (self-insert " "))"))
+> (print (self-insert "(print (self-insert " "))"))
+(print (self-insert "(print (self-insert " "))"))
 ```
 
 We did it! We made a quine!
@@ -77,8 +76,8 @@ We did it! We made a quine!
 Unfortunately, it feels a bit like we cheated. Clearly, the `self-insert` function is doing the majority of the work here, but its source is not included in the quine. However, you may notice that you can add source to the beginning or end of the program without anything breaking. Let's try a simple example of prepending 42 to our quine just to see what it looks like.
 
 ```clojure
-> 42 (println (self-insert "42 (println (self-insert " "))"))
-42 (println (self-insert "42 (println (self-insert " "))"))
+> 42 (print (self-insert "42 (print (self-insert " "))"))
+42 (print (self-insert "42 (print (self-insert " "))"))
 ```
 
 Notice how we added 42 to both the part of the program that will be evaluated as well as the quoted copy. Also note that the quine is still a quine, even though we added a bit of junk to the beginning of our program.
@@ -86,8 +85,7 @@ Notice how we added 42 to both the part of the program that will be evaluated as
 Ok, now let's try making the full quine with `self-insert` included. The only change to our smaller quine is that we prepended the source necessary for `self-insert`. Just as above, we will prepend the code for `self-insert` to both the quoted and unquoted copies of the source.
 
 ```clojure
-(require '[clojure.java.io :as io]
-         '[clojure.string :as str])
+(require '[clojure.string :as str])
 
 (defn ^:private escape
   "Add slashes before double quotes and slashes."
@@ -105,8 +103,7 @@ Ok, now let's try making the full quine with `self-insert` included. The only ch
        " "
        (quoted end) end))
 
-(print (self-insert "(require '[clojure.java.io :as io]
-         '[clojure.string :as str])
+(print (self-insert "(require '[clojure.string :as str])
 
 (defn ^:private escape
   \"Add slashes before double quotes and slashes.\"

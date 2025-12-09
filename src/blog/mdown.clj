@@ -863,7 +863,7 @@
    (apply
     rss/channel-xml
     {:title "Phronemophobic's Blog"
-     :description "A techinical blog mostly about doing fun things with Clojure."
+     :description "A programming blog mostly about doing fun things with Clojure."
      :link "https://blog.phronemophobic.com/"}
 
     (eduction

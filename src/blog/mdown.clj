@@ -342,7 +342,13 @@
 (extend-type com.vladsch.flexmark.ast.OrderedListItem
   IBlogHtml
   (blog-html [this]
-    [:li (map blog-html (children this))]))
+    [:li (mapcat
+          (fn [elem]
+            ;; Paragraphs add lots of unnecessary spacing
+            (if (instance? com.vladsch.flexmark.ast.Paragraph elem)
+              (map blog-html (children elem))
+              [(blog-html elem)]))
+          (children this))]))
 
 
 (extend-type com.vladsch.flexmark.ast.BulletList
@@ -353,7 +359,13 @@
 (extend-type com.vladsch.flexmark.ast.BulletListItem
   IBlogHtml
   (blog-html [this]
-    [:li (map blog-html (children this))]))
+    [:li (mapcat
+          (fn [elem]
+            ;; Paragraphs add lots of unnecessary spacing
+            (if (instance? com.vladsch.flexmark.ast.Paragraph elem)
+              (map blog-html (children elem))
+              [(blog-html elem)]))
+          (children this))]))
 
 (extend-type com.vladsch.flexmark.ast.HtmlCommentBlock
   IBlogHtml

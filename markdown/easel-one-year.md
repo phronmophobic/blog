@@ -4,9 +4,9 @@ Posted: December 20, 2025
 
 ## What is Easel?
 
-Easel is an IDE written in Clojure that I've been working on for the last year. See it in action <https://youtu.be/eXJitF8Jvyg>.
+Easel is an IDE written in Clojure that I've been working on for the last year. See it in action <https://youtu.be/sceGtaNHxcM>.
 
-Easel itself is relatively focused. It provides a model for specifying tools and screen space to show tools in the same window. The bulk of the functionality you would expect from an IDE is provided via simple, modular tools that can share data with each other. Tools can also be used independently outside of Easel. Think of it as an IDE as a library. Some examples of tools are text editing, terminal emulation, data inspection, web browsing and more.
+Easel itself is relatively focused. It provides a model for specifying tools and a simple user interface for arranging tools in the same window. The bulk of the functionality you would expect from an IDE is provided via simple, modular tools that can share data with each other. Tools can also be used independently outside of Easel. Think of it as an IDE as a library. Some examples of tools are text editing, terminal emulation, data inspection, web browsing and more.
 
 ## Why Easel?
 
@@ -51,7 +51,8 @@ Software tools used to work together. Check out this [video](https://www.youtube
 
 Historically, Emacs users have extended their Emacs environment not just to improve their coding workflow, but they've also built personal applications, games, note-taking apps, calculators, email clients, messaging apps, meal planners, music players, etc, etc. In previous eras, computers came with various authoring tools for writing documents, drawing pictures, recording audio, and writing programs. I feel like we've lost a bit of that ethos of using the computer as a creative tool (although there are still wonderful examples like <https://scratch.mit.edu/>). 
 
-It's important for Easel to not only provide excellent tools for writing clojure programs, but that Easel can also host a wide variety of tools to help make games, art, and productivity apps. Each tool can benefit from having a data oriented suite of other tools that can be mixed and matched. Easel isn't just for writing software, it's a tool to help make the computer do what you want.
+
+It's important for Easel to not just provide excellent tools for writing clojure programs. Easel should also support making games, art, and productivity apps. Each tool can benefit from having a data oriented suite of other tools that can be mixed and matched. Easel isn't just for writing software, it's a tool to help make the computer do what you want.
 
 There are a few interesting programming problems related to making different software tools work together, but I would argue the main impediments to building software tools that work together are social. The problem is that in most cases, I don't actually want my applications to share data with each other because I don't really trust most of the software running on my computer. Sharing any data at all with an application usually feels like a reluctant concession rather than a confident, helpful collaboration. I don't have a solution to the problem of building trust other than doing it the hard way. 
 
@@ -87,7 +88,7 @@ Some other notable tools for Easel that were implemented or improved over the pa
 - [Dewey](https://github.com/phronmophobic/dewey): A public dataset that indexes clojure libraries available on github
 - [Bifurcan](https://github.com/phronmophobic/bifurcan): A fork of Zach Tellman's [bifurcan](https://github.com/lacuna/bifurcan) with improvements to the Rope implementation
 
-It's difficult to convey the joy of using Easel, but I've uploaded a short demo to [youtube](https://youtu.be/eXJitF8Jvyg) that tries to convey how I use Easel.
+It's difficult to convey the joy of using Easel, but I've uploaded a short demo to <https://youtu.be/sceGtaNHxcM> that tries to convey how I use Easel.
 
 ## "Roadmap"
 

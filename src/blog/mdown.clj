@@ -676,6 +676,21 @@
    :src "markdown/quineize.md"
    :out "quineize.html"})
 
+(defpost easel-one-year
+  {:id :easel-one-year
+   :title "Easel Turns One!"
+   :subheading "One year of building my own IDE in Clojure"
+   :pubDate (date-to-instant 2025 12 20)
+   :vega? false
+   :nav [:div {:class "container"}
+         [:nav.nav.blog-nav
+          [:a.nav-link
+           {:href "/"}
+           "Home"]]]
+   :asset-prefix "easel-one-year/"
+   :src "markdown/easel-one-year.md"
+   :out "easel-one-year.html"})
+
 (defpost dewey-sql
   {:id :dewey-sql
    :title "Dewey SQL"

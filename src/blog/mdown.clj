@@ -883,7 +883,7 @@
    (when-let [description (:subheading post)]
      {:description description})))
 
-(defn render-rss-feed []
+(defn render-rss-feed [& args]
   (spit
    "resources/public/rss.xml"
     
@@ -899,7 +899,7 @@
 
      (vals @POSTS)))))
 
-(defn render-index []
+(defn render-index [& args]
   (let [page-html (blog-page
                    {:title "Phronemophobic's Blog"
                     :body [:div

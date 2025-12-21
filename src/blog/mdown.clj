@@ -661,6 +661,21 @@
    :src "markdown/functional-ui.md"
    :out "functional-ui.html"})
 
+(defpost easel-one-year
+  {:id :easel-one-year
+   :title "Easel Turns One!"
+   :subheading "One year of building my own IDE in Clojure"
+   :pubDate (date-to-instant 2025 12 20)
+   :vega? false
+   :nav [:div {:class "container"}
+         [:nav.nav.blog-nav
+          [:a.nav-link
+           {:href "/"}
+           "Home"]]]
+   :asset-prefix "easel-one-year/"
+   :src "markdown/easel-one-year.md"
+   :out "easel-one-year.html"})
+
 (defpost quineize
   {:id :quineize
    :title "Simplifying Quines"
@@ -676,20 +691,7 @@
    :src "markdown/quineize.md"
    :out "quineize.html"})
 
-(defpost easel-one-year
-  {:id :easel-one-year
-   :title "Easel Turns One!"
-   :subheading "One year of building my own IDE in Clojure"
-   :pubDate (date-to-instant 2025 12 20)
-   :vega? false
-   :nav [:div {:class "container"}
-         [:nav.nav.blog-nav
-          [:a.nav-link
-           {:href "/"}
-           "Home"]]]
-   :asset-prefix "easel-one-year/"
-   :src "markdown/easel-one-year.md"
-   :out "easel-one-year.html"})
+
 
 (defpost dewey-sql
   {:id :dewey-sql
@@ -907,7 +909,9 @@
                                  :when (get post :index? true)]
                              [:div
                               [:a {:href (:out post)}
-                               (:title post)]])
+                               (:title post)]
+                              (when-let [subheading (:subheading post)]
+                                (str " - " subheading))])
                            [:hr]
                            [:footer
                             [:p

@@ -19,8 +19,8 @@ Imagine it's 10 years from now and you're working in the IDE of your dreams. Wha
 - Provide a platform for experimentation
 - Situated tools that work together by sharing data
 - IDE as a library
-- User Oriented
-- Open Source
+- User oriented
+- Open source
 - Full access to the capabilities of the hardware
 
 ### The Hard Problems

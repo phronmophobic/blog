@@ -676,7 +676,7 @@
   {:id :reevaluatingtheide
    :title "Reevaluating the IDE Talk Notes"
    ;; :subheading ""
-   :pubDate (date-to-instant 2026 5 20)
+   :pubDate (date-to-instant 2026 5 19)
    :vega? false
    :nav [:div {:class "container"}
          [:nav.nav.blog-nav

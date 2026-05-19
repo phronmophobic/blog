@@ -420,6 +420,17 @@
 (defmethod markdown-macro "square-bracket-right" [macro]
   "]")
 
+(defmethod markdown-macro "slide" [macro]
+  (let [childs (->> (children macro)
+                    (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.MacroClose %))
+                    (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.Macro %)))]
+    [:img (merge 
+           {:src (clojure.string/join (map #(.getChars %) childs))
+            ;; :alt (-> this (.getText) str)
+            :style "max-width: 90vw;height:auto;max-height:200px;"}
+           (when-let [alt (get (.getAttributes macro) "alt")]
+             {:alt alt}))]))
+
 (defmethod markdown-macro "quote" [macro]
   (let [childs (->> (children macro)
                     (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.MacroClose %))
@@ -660,6 +671,21 @@
                  "Code on Github"]]]
    :src "markdown/functional-ui.md"
    :out "functional-ui.html"})
+
+(defpost reevaluatingtheide
+  {:id :reevaluatingtheide
+   :title "Reevaluating the IDE Talk Notes"
+   ;; :subheading ""
+   :pubDate (date-to-instant 2026 5 20)
+   :vega? false
+   :nav [:div {:class "container"}
+         [:nav.nav.blog-nav
+          [:a.nav-link
+           {:href "/"}
+           "Home"]]]
+   :asset-prefix "reevaluatingtheide/"
+   :src "markdown/reevaluatingtheide.md"
+   :out "reevaluatingtheide.html"})
 
 (defpost easel-one-year
   {:id :easel-one-year

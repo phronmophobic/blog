@@ -424,12 +424,14 @@
   (let [childs (->> (children macro)
                     (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.MacroClose %))
                     (remove #(instance? com.vladsch.flexmark.ext.xwiki.macros.Macro %)))]
-    [:img (merge 
-           {:src (clojure.string/join (map #(.getChars %) childs))
-            ;; :alt (-> this (.getText) str)
-            :style "max-width: 90vw;height:auto;max-height:200px;"}
-           (when-let [alt (get (.getAttributes macro) "alt")]
-             {:alt alt}))]))
+    [:a {:target "_blank"
+         :href (clojure.string/join (map #(.getChars %) childs))}
+     [:img (merge
+            {:src (clojure.string/join (map #(.getChars %) childs))
+             ;; :alt (-> this (.getText) str)
+             :style "max-width: 90vw;height:auto;max-height:200px;"}
+            (when-let [alt (get (.getAttributes macro) "alt")]
+              {:alt alt}))]]))
 
 (defmethod markdown-macro "quote" [macro]
   (let [childs (->> (children macro)

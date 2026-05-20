@@ -34,6 +34,7 @@ Below are some of the resources used for my talk, Reevaluating the IDE.
 - Links for the lisp 1.5 family <https://softwarepreservation.computerhistory.org/LISP/lisp15_family.html>
 - <http://xahlee.info/emacs/misc/Daniel_Weinreb_died.html>
 - Medley Primer - <https://interlisp.org/documentation/Medley-Primer.pdf>
+- <https://jackrusher.com/classic-ux/>
 
 ## Videos
 

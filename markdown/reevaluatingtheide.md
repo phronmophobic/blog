@@ -242,6 +242,9 @@ sources:
 ----- 
 {{slide}}reevaluatingtheide/images/slide-37.jpg{{/slide}}
 
+sources:
+- <https://github.com/phronmophobic/easel>
+
 ----- 
 {{slide}}reevaluatingtheide/images/slide-38.jpg{{/slide}}
 

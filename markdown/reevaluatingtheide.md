@@ -1,16 +1,11 @@
-<!-- - Reevaluating the IDE Talk Notes -->
-<!--   - [Links](#Links) -->
-<!--   - [Videos](#Videos) -->
-<!--   - [Slides](#Slides) -->
-
 Below are some of the resources used for my talk, Reevaluating the IDE.
 
 {{table-of-contents/}}
 
 
 ## Links
-- The history of lisp (1979) <http://jmc.stanford.edu/articles/lisp/lisp.pdf>
-- The evolution of LISP <https://www.dreamsongs.com/Files/Hopl2.pdf>
+- The History Of Lisp (1979) <http://jmc.stanford.edu/articles/lisp/lisp.pdf>
+- The Evolution Of LISP <https://www.dreamsongs.com/Files/Hopl2.pdf>
 - John McCarthy's website <https://www-formal.stanford.edu/jmc/>
 - <https://smbx.org/symbolics-technical-summary/>
 - <https://www.computinghistory.org.uk/det/22982/Symbolics-3620/>
@@ -18,7 +13,7 @@ Below are some of the resources used for my talk, Reevaluating the IDE.
 - Xerox PARC Archives - <https://archive.org/details/xerox-parc>
 - <https://archive.org/details/20573MAA5xx85InformationS/page/16/mode/2up>
 - <https://www.inputicenter.com/wp-content/uploads/2015/12/usprofessionalse5229unse.pdf>
-- <https://www-formal.stanford.edu/jmc/office/office.html>
+- CRITERIA FOR USEFULNESS OF COMPUTERS IN OFFICES - <https://www-formal.stanford.edu/jmc/office/office.html>
 - <https://softwarepreservation.computerhistory.org/LISP/>
 - dijkstra hates lisp - <https://kazimirmajorinc.com/Documents/Edsger-W-Dijkstra-on-Lisp/index.html>
 - Herbert Stoyan collection - <https://www.computerhistory.org/collections/catalog/102703236/>
@@ -30,9 +25,10 @@ Below are some of the resources used for my talk, Reevaluating the IDE.
 - Symbolics Lisp Machine Museum - <https://smbx.org/>
 - <https://blog.fogus.me/2022/11/10/the-one-about-lisp-interactivity.html>
 - <https://blog.fogus.me/2019/04/03/notes-on-interactive-computing-environments.html>
-- history of lisp <https://softwarepreservation.computerhistory.org/LISP/>
+- History of Lisp <https://softwarepreservation.computerhistory.org/LISP/>
 - Links for the lisp 1.5 family <https://softwarepreservation.computerhistory.org/LISP/lisp15_family.html>
 - <http://xahlee.info/emacs/misc/Daniel_Weinreb_died.html>
+- LMI vs Symbolics drama <http://xahlee.info/emacs/misc/Daniel_Weinreb_rebuttal_to_rms.html>
 - Medley Primer - <https://interlisp.org/documentation/Medley-Primer.pdf>
 - <https://jackrusher.com/classic-ux/>
 
@@ -48,16 +44,17 @@ Below are some of the resources used for my talk, Reevaluating the IDE.
 - Symbolics Concordia - <https://youtu.be/ud0HhzAK30w?si=QSitfrJtRzhIfRbq>
 - Lets LISP like it's 1959 - <https://www.youtube.com/watch?v=hGY3uBHVVr4>
 - What have we lost? - <https://www.youtube.com/watch?v=7RNbIEJvjUA>
-- symbolics show reel - <https://archive.org/details/symbolics-showreel-1992>
-- symbolics show real <https://archive.org/details/symbolicsdemoreel1989>
-- interlisp-d <https://archive.org/details/xerox-parc_V-141_1>
+- Symbolics showreel - <https://archive.org/details/symbolics-showreel-1992>
+- Symbolics showreel <https://archive.org/details/symbolicsdemoreel1989>
+- Interlisp-d <https://archive.org/details/xerox-parc_V-141_1>
 - Interlisp Tool making part 1 - <https://www.youtube.com/watch?v=ps_N2WWwM-o>
-- the nextstep build <https://www.youtube.com/watch?v=4_MMxznJFbY>
-- nexstep vs mac osx <https://www.youtube.com/watch?v=0sOyuiPtlok>
+- The NeXTSTEP Build <https://www.youtube.com/watch?v=4_MMxznJFbY>
+- NeXTSTEP vs Mac OS X - System Demo and Comparison <https://www.youtube.com/watch?v=0sOyuiPtlok>
 - The Alternate Reality Kit - <https://www.youtube.com/watch?v=w1HhPE0zV6g>
 - Display Oriented Programmer's Assistant - <https://www.youtube.com/watch?v=FuIPCFnoWyU>
-- A powerful idea about ideas - <https://www.ted.com/talks/alan_kay_a_powerful_idea_about_ideas>
+- A Powerful Idea About Ideas - <https://www.ted.com/talks/alan_kay_a_powerful_idea_about_ideas>
 - <https://github.com/matthiasn/talk-transcripts/blob/master/Kay_Alan/NonIncrementalFuture.md>
+- Adam Savage Maker Faire Speeches <https://youtube.com/playlist?list=PLS4lcSdZbAcX4wrmrhF8canbs6xOkQhlI&si=0F4yWIf_QHk2OgO4>
 
 
 ## Slides

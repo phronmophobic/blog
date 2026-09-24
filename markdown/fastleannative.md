@@ -6,16 +6,16 @@ Posted: September 23rd, 2026
 
 # Rationale
 
-Working with native libraries and off-heap memory has historically been awkward and cumbersome from clojure. Recently, there has been an increasing number of powerful tools for working within and alongside native libraries written in c, c++, rust, and more. These tools enable clojure developers to improve startup time, lower CPU and memory usage, create standalone binaries, call native libraries, manipulate off-heap memory, reach new platforms, and create native libraries for embedding clojure in non JVM applications.
+Working with native libraries and off-heap memory has historically been awkward and cumbersome from Clojure. Recently, there has been an increasing number of powerful tools for working within and alongside native libraries written in c, c++, rust, and more. These tools enable Clojure developers to improve startup time, lower CPU and memory usage, create standalone binaries, call native libraries, manipulate off-heap memory, reach new platforms, and create native libraries for embedding Clojure in non JVM applications.
 
-This reference serves as a companion guide to a workshop I'm giving at the Clojure Conj: [Fast, Lean, Native Clojure](https://2026.clojure-conj.org/workshops). The tools and technologies for letting clojure developers leverage the native ecosystem are improving quickly. The goal for this document is to cover the fundamental concepts behind these tools so that readers can apply them regardless of which technologies they end up choosing.
+This reference serves as a companion guide to a workshop I'm giving at the Clojure Conj: [Fast, Lean, Native Clojure](https://2026.clojure-conj.org/workshops). The tools and technologies for letting Clojure developers leverage the native ecosystem are improving quickly. The goal for this document is to cover the fundamental concepts behind these tools so that readers can apply them regardless of which technologies they end up choosing.
 
 {{table-of-contents/}}
  
 
 # The C ABI
 
-C doesn't have an ABI. Technically. However, that technicality doesn't matter in practice. In practice, the C ABI is _the_ most common way  for different languages and runtimes to talk to each or to the underlying operating system.
+C doesn't have an ABI. Technically. However, that technicality doesn't matter in practice. In practice, the C ABI is _the_ most common way  for different languages and runtimes to talk to each other or to the underlying operating system.
 
 Calling Rust from C++? Use the C ABI.
 Calling C++ from Python? Use the C ABI.
@@ -26,7 +26,7 @@ As there is no official C ABI, there is also no official definition. For our pur
 ## C ABI datatypes
 
 The main datatypes are:
-- bool (typically 1 byte in size)
+- _Bool/bool (typically 1 byte in size)
 - integral numbers (eg. char, short, int, long, long long)
 - floating point numbers (eg. float, double, long double)
 - enum (typically shares the same size as int)
@@ -45,7 +45,7 @@ As an example, here is the definition of `cos` in c:
 double cos(double x);
 ```
 
-This function is called `cos`. It takes single double as an argument and returns a double.
+This function is called `cos`. It takes a single double as an argument and returns a double.
 
 ## Structs
 
@@ -58,7 +58,7 @@ typedef struct TSPoint {
 } TSPoint;
 ```
 
-Structs have fields. Each field has a type and a name. Field types can be c data types like int, float, pointer, and even other structs. In addition to names and types, the order and type of fields also specifies how the structure will be layed out in memory. This is important for reading and writing data that is provided or received from a native library.
+Structs have fields. Each field has a type and a name. Field types can be c data types like int, float, pointer, and even other structs. In addition to names and types, the order and type of fields also specifies how the structure will be laid out in memory. This is important for reading and writing data that is provided or received from a native library.
 
 ### Pass by Reference vs. Pass by Value 
 
@@ -98,7 +98,7 @@ int main(int argc, char** argv){
 
     incByValue(a);
 
-    printf("nums are %d, %d\n", a.num, a.numStruct->num);
+    printf("nums are %d, %d, %d\n", a.num, a.numStruct->num, ns.num);
     
 
 }
@@ -107,7 +107,7 @@ This will print the following:
 ```sh
 $ gcc structexample.c -o structexample
 $ ./structexample
-nums are 42, 43
+nums are 42, 43, 43
 ```
 
 As you can see, the value of `a.num` was not altered by `incByValue`, but `a.numStruct->num` was altered. If it doesn't make sense initially, that's ok. If you're not familiar with `c`, this can be a very difficult concept to grok. However, understanding the difference between "pass by reference" and "pass by value" is very important for writing correct code.
@@ -169,7 +169,7 @@ As you can see, it has a pointer to the contents of the string and a field that 
 
 ## Callbacks
 
-Some native function accept callbacks, aka function pointers, or upcalls. This allows native functions to invoke functions in the higher level language. Just to give a flavor why this is useful, let's take a look at a few examples.
+Some native functions accept callbacks, aka function pointers, or upcalls. This allows native functions to invoke functions in the higher level language. Just to give a flavor why this is useful, let's take a look at a few examples.
 
 ### glfw example
 
@@ -177,11 +177,11 @@ Here is an example of a callback that can be passed to glfw to receive [key even
 
 
 ```c
-;; callback type definition
-typedef void(* GLFWkeyfun) (GLFWwindow *window, int key, int scancode, int action, int mods)
+// callback type definition
+typedef void(* GLFWkeyfun) (GLFWwindow *window, int key, int scancode, int action, int mods);
 
 
-;; example usage
+// example usage
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_E && action == GLFW_PRESS)
@@ -220,7 +220,7 @@ Here, the example is calling `qsort`, which will sort an array. The last argumen
 
 ## Variadic Functions
 
-While rare for most library APIs, C ABI functions may be variadiac (ie. accept different numbers of arguments). The canonical example is `printf`. Below is the C definition for `printf` and an example of its usage):
+While rare for most library APIs, C ABI functions may be variadic (ie. accept different numbers of arguments). The canonical example is `printf`. Below is the C definition for `printf` and an example of its usage:
 
 ```c
 
@@ -231,7 +231,7 @@ printf("I can take %d or %d or more arguments!\n", 1, 2);
 
 
 
-# Graalvm Native Image
+# GraalVM Native Image
 
 Native Image compiles Java bytecode to standalone executables and native libraries. This allows for faster startup, improved performance, smaller, self-contained deployment artifacts, and lower memory usage.
 
@@ -270,35 +270,35 @@ The Foreign Function and Memory API, aka FFM, previously aka Project Panama is t
 
 > The Foreign Function and Memory (FFM) API enables Java programs to interoperate with code and data outside the Java runtime. This API enables Java programs to call native libraries and process native data without the brittleness and danger of JNI. The API invokes foreign functions, code outside the JVM, and safely accesses foreign memory, memory not managed by the JVM. 
 
-Since there are many excellent resources for learning about the FFM apis, we will only cover a few clojure specific topics.
+Since there are many excellent resources for learning about the FFM APIs, we will only cover a few Clojure specific topics.
 
-## `invokeExact` inexpressible in clojure
+## `invokeExact` Inexpressible in Clojure
 
-Most Java example code for FFM uses [MethodHandle/.invokeExact](https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/invoke/MethodHandle.html#invokeExact(java.lang.Object...)). However, `invokeExact` has a polymorphic signature which is [currently inexpressible](https://clojure.atlassian.net/browse/CLJ-2921) using clojure's java interop syntax. As a workaround, `invokeWithArguments` can be substituted. Unfortunately, `invokeWithArguments` is less performant. Fortunately, the clojure wrapper libraries for FFM use bytecode generation to allow usage from clojure to be both fast and idiomatic.
+Most Java example code for FFM uses [MethodHandle/.invokeExact](https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/invoke/MethodHandle.html#invokeExact(java.lang.Object...)). However, `invokeExact` has a polymorphic signature which is [currently inexpressible](https://clojure.atlassian.net/browse/CLJ-2921) using Clojure's Java interop syntax. As a workaround, `invokeWithArguments` can be substituted. Unfortunately, `invokeWithArguments` is less performant. Fortunately, the Clojure wrapper libraries for FFM use bytecode generation to allow usage from Clojure to be both fast and idiomatic.
 
 ## Clojure FFM compatible wrappers
 
-[dtype next](https://cnuernber.github.io/dtype-next/tech.v3.datatype.ffi.html)
-[coffi](https://github.com/IGJoshua/coffi/)
-[babashka.ffi](https://github.com/babashka/ffi)
+- [dtype next](https://cnuernber.github.io/dtype-next/tech.v3.datatype.ffi.html)
+- [coffi](https://github.com/IGJoshua/coffi/)
+- [babashka.ffi](https://github.com/babashka/ffi)
 
-For a comparision of ffi libraries, see this google docs [spreadsheet](https://docs.google.com/spreadsheets/u/1/d/e/2PACX-1vQAiX80h3wsbwo7qv8aAOp2TFLO6V2dJV5Ay24xihhKObDhT7HwS0nbZGUPxLjaJc9rSwoN-tNksFda/pubhtml#gid=1519410866).
+For a comparison of ffi libraries, see this google docs [spreadsheet](https://docs.google.com/spreadsheets/u/1/d/e/2PACX-1vQAiX80h3wsbwo7qv8aAOp2TFLO6V2dJV5Ay24xihhKObDhT7HwS0nbZGUPxLjaJc9rSwoN-tNksFda/pubhtml#gid=1519410866).
 
 
 # Packaging Libraries that use Native Code
 
-A challenge when wrapping native libraries is that the native library also needs to be provided or exist on the target system. The most common methods for distributing native code are standalone executables and dynamic libraries. While it is possible to make a custom build of the java runtime that statically links a particular native library, it is fairly uncommon compared to bundling a shared library that can be loaded at runtime. As such, we will only cover loading dynamic libraries at runtime and producing standalone executables.
+A challenge when wrapping native libraries is that the native library also needs to be provided or exist on the target system. The most common methods for distributing native code are standalone executables and dynamic libraries. While it is possible to make a custom build of the Java runtime that statically links a particular native library, it is fairly uncommon compared to bundling a shared library that can be loaded at runtime. As such, we will only cover loading dynamic libraries at runtime and producing standalone executables.
 
-## Packagin Dynamic Libraries
+## Packaging Dynamic Libraries
 
 Dynamic libraries (aka. shared libraries) are files that contain code targeting a particular operating system and architecture. The actual implementation for loading dynamic libraries is provided by the particular operating system (eg. `dlopen`). However, the OS specific function calls are typically abstracted over by ffi libraries. The typical workflow for loading a dynamic library is:
 
 1. Load the library
-2. Lookup the address of symbol that names the exported function name
+2. Lookup the address of symbol for the exported function
 3. Wrap the function address as a function call by providing the types of the arguments and return value.
 
 
-Here's a basic example of loading a shared library using the java's Foreign Function and Memory API in java.
+Here's a basic example of loading a shared library using the Java's Foreign Function and Memory API in Java.
 
 
 ```java
@@ -315,7 +315,7 @@ Here's a basic example of loading a shared library using the java's Foreign Func
  }
 ```
 
-And here it is translated to clojure (with a little extra ceremony to accomodate the java interop).
+And here it is translated to Clojure (with a little extra ceremony to accommodate the Java interop).
 
 ```clojure
 (import
@@ -323,7 +323,7 @@ And here it is translated to clojure (with a little extra ceremony to accomodate
  '(java.lang.invoke MethodHandle))
 
 ;; If the dynamic library is not already loaded
-;; (System/loadLoadLibrary "mylib")
+;; (System/loadLibrary "mylib")
 
 (def linker (Linker/nativeLinker))
 
@@ -361,14 +361,14 @@ Pros:
 - Smaller jar sizes
 
 Cons:
-- Not all depencencies are captured by the library maven coordinate (or equivalent)
+- Not all dependencies are captured by the library maven coordinate (or equivalent)
 - Potential version compatibility issues
 - Requires extra steps for the user to use your library
 
 ### FFI loaders
 
 
-Some ffi libraries provide helpers for packaging shared libraries in jars and extracting them so they can be loaded (eg. javacpp, JNA), but some do not. If your ffi library doesn't help package native dependencies, you can also rely on a separate ffi library just for its loading utilities. For example, [javacpp-presets](https://github.com/bytedeco/javacpp-presets/) provides packages with the native dependencies for libraries like llvm and ffmpeg. These native dependencies can be a pain to package, so you can use the javacpp loader for these packages, even if you don't want to use the java wrappers generated by javacpp.
+Some ffi libraries provide helpers for packaging shared libraries in jars and extracting them so they can be loaded (eg. javacpp, JNA), but some do not. If your ffi library doesn't help package native dependencies, you can also rely on a separate ffi library just for its loading utilities. For example, [javacpp-presets](https://github.com/bytedeco/javacpp-presets/) provides packages with the native dependencies for libraries like llvm and ffmpeg. These native dependencies can be a pain to package, so you can use the javacpp loader for these packages, even if you don't want to use the Java wrappers generated by javacpp.
 
 
 ### Custom Packaging
@@ -377,10 +377,10 @@ Since dynamic library loading is implemented by the operating system, separate b
 
 When packaging native dependency, I recommend having separate dependencies for:
 - each operating system, architecture combination that you target
-- the clojure source for the native wrapper without any native dependencies
-- an additional coordinate with the clojure source and binaries for all target systems
+- the Clojure source for the native wrapper without any native dependencies
+- an additional coordinate with the Clojure source and binaries for all target systems
 
-This allows consumers of your library to decide if they want to optimize for convenience or bundle size. It also allows the user to build native depencencies themselves.
+This allows consumers of your library to decide if they want to optimize for convenience or bundle size. It also allows the user to build native dependencies themselves.
 
 In practice, it is possible to build shared libraries targeting Mac OSX and Windows that can work across a wide variety of systems and versions. You still need separate binaries for each architecture, but the same shared library will usually work on most systems running the same OS and architecture.
 
@@ -392,7 +392,7 @@ If your ffi library doesn't provide helpers for packaging native dependencies, y
 
 ## Static
 
-One way to bundle a native library is to statically link the library as part of the distributed executable. This can be especially attractive for builds that can produce standalone binaries (eg. native image, jank). While it is possible to build your own java runtime distribution that bundles your app and native dependencies, it's less common. When targeting the JVM, using dynamic libraries is generally the preferred approach.
+One way to bundle a native library is to statically link the library as part of the distributed executable. This can be especially attractive for builds that can produce standalone binaries (eg. native image, jank). While it is possible to build your own Java runtime distribution that bundles your app and native dependencies, it's less common. When targeting the JVM, using dynamic libraries is generally the preferred approach.
 
 <!--
 
@@ -412,7 +412,7 @@ Typically, finding the address for a function is fairly straightforward. The sym
 ## Wrapping Native Functions
 
 
-After loading a library, you're still left with the task of making the native function accessible to your clojure code. How you wrap the native library is generally where most of the challenges lie.
+After loading a library, you're still left with the task of making the native function accessible to your Clojure code. How you wrap the native library is generally where most of the challenges lie.
 
 ### Specifying Types
 
@@ -452,16 +452,16 @@ Extracting the api data requires libclang. However, in most cases, the API data 
 
 There are multiple different FFI libraries. Separating the datafication of the API from the code generation allows clong to support multiple ffi libraries as targets. Additionally, many native libraries rely on conventions for correct usage. As an example, many libraries have a convention where all functions with "create" return a resource that needs to be freed. Since the API interface is available as data, generating code that correctly and consistently implements these conventions is easy.
 
-Clong currently supports code generators for JNA and dtype-next. The dtype-next library has an extensible FFI implementation that supports multiple ffi targets including Java's FFM, graalvm native-image, and JNA.
+Clong currently supports code generators for JNA and dtype-next. The dtype-next library has an extensible FFI implementation that supports multiple ffi targets including Java's FFM, GraalVM native-image, and JNA.
 
 ##### Ergonomic wrappers
 
-Clong's code generation deals with basic datatypes that correspond to the data types found in the C ABI (eg. char, float, int, long, pointer, struct, etc). In most cases, an idiomatic clojure API will want to provide a higher level interface and deal with more ergonomic data types (eg. strings). It's tempting to want to implement the higher level API directly in the code that wraps the native functions. However, I've found that a much saner approach is to generate code that wraps the C API using a very direct approach and building the higher level API on top of it.
+Clong's code generation deals with basic datatypes that correspond to the data types found in the C ABI (eg. char, float, int, long, pointer, struct, etc). In most cases, an idiomatic Clojure API will want to provide a higher level interface and deal with more ergonomic data types (eg. strings). It's tempting to want to implement the higher level API directly in the code that wraps the native functions. However, I've found that a much saner approach is to generate code that wraps the C API using a very direct approach and building the higher level API on top of it.
 
 
 # Thread Safety
 
-The JVM memory model does a lot of work to enforce a coherent memory model for building multi-threaded applications. The JDK does provide some guarantees for offheap memory (eg. [Arena](https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/foreign/Arena.html)). However, these gaurantees do not apply to memory allocated by native libraries. Most native libraries use mutation pervasively and are not thread safe. Using native libraries safely in a multi-threaded context is currently beyond the scope of this reference. Good luck!
+The JVM memory model does a lot of work to enforce a coherent memory model for building multi-threaded applications. The JDK does provide some guarantees for off-heap memory (eg. [Arena](https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/foreign/Arena.html)). However, these guarantees do not apply to memory allocated by native libraries. Most native libraries use mutation pervasively and are not thread safe. Using native libraries safely in a multi-threaded context is currently beyond the scope of this reference. Good luck!
 
 
 
@@ -477,7 +477,7 @@ Even though you may be calling native code that expects manual memory management
 
 On the JVM, you can use the [java.lang.foreign.Arena/ofAuto](https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/foreign/Arena.html#ofAuto()) to keep track of MemorySegments for you. However, the auto arena (or the other arenas) can only help with memory that you allocate.
 
-Another technique is to use [java.lang.ref.Cleaner](https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/ref/Cleaner.html)s. Cleaners allow you to register a function to be called when an object becomes phantom reachable (ie. ready to be collected). This allows you to either free associated resources or decrement a reference count in a managed way. Just be sure that your cleaning function doesn't reference your object! Even if your context doesn't have access to java's Cleaner (eg. the context isn't JVM based), there may be a similar alternative.
+Another technique is to use [java.lang.ref.Cleaner](https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/ref/Cleaner.html). Cleaners allow you to register a function to be called when an object becomes phantom reachable (ie. ready to be collected). This allows you to either free associated resources or decrement a reference count in a managed way. Just be sure that your cleaning function doesn't reference your object! Even if your context doesn't have access to Java's Cleaner (eg. the context isn't JVM based), there may be a similar alternative.
 
 Warning! The garbage collector will probably not release resources promptly. In many cases, that is a good thing because it increases efficiency. Waiting for a handle to be collected to free resources may take a while. Further, the garbage collector does not necessarily know the size of the resource referenced by a handle. The handle itself may only be a few bytes, but may point to a very large object in memory.
 
@@ -485,11 +485,11 @@ As a library author, it's usually good practice to allow library users to explic
 
 ### Hanging onto References
 
-If a chunk memory managed by the garbage collector is passed to native code, you must make sure to hang to the reference until the native code will no longer need access. Otherwise, the garbage collector may indeterministically free the resource beofre the native code is done using the resource. This may crash your program or worse.
+If a chunk of memory managed by the garbage collector is passed to native code, you must make sure to hang on to the reference until the native code will no longer need access. Otherwise, the garbage collector may unpredictably free the resource before the native code is done using the resource. This may crash your program or worse.
 
 ### Overzealous Allocations
 
-As long as your program is allocating memory faster than the garbage collector can clean up garbage, the JVM does a decent job of managing the total memory used by the program. The total memory used can be further constrainted via system parameters. However, when allocating memory offheap, the garbage collector usually only knows about the sizes of references or resource handles and doesn't know about the sizes of the resources that are offheap. If you don't manually free large resources, the garbage collector may not prioritize cleaning unreachable handles to large resources. This can cause the total memory usage of the program to balloon. Even if you do clean up the resources eventually, simply freeing the resources does not typically cause the total memory used by the program to decrease. To prevent memory usage from climbing out of control, it may be necessary to take a more hands on approach to allocating and freeing resources rather than relying on the garbage collector.
+As long as your program is allocating memory faster than the garbage collector can clean up garbage, the JVM does a decent job of managing the total memory used by the program. The total memory used can be further constrained via system parameters. However, when allocating memory off-heap, the garbage collector usually only knows about the sizes of references or resource handles and doesn't know about the sizes of the resources that are off-heap. If you don't manually free large resources, the garbage collector may not prioritize cleaning unreachable handles to large resources. This can cause the total memory usage of the program to balloon. Even if you do clean up the resources eventually, simply freeing the resources does not typically cause the total memory used by the program to decrease. To prevent memory usage from climbing out of control, it may be necessary to take a more hands on approach to allocating and freeing resources rather than relying on the garbage collector.
 
 ### Never Free
 
@@ -516,7 +516,7 @@ An incomplete list of breaking changes for native APIs:
 - Adding or removing arguments to functions
 - Changing the data type of a function argument or return value
 
-Removing functions and adding/removing arguments should be self explanatory, but what it means to change the datatype of an argument or return value can be a bit tricky. The main reason is that many C apis accept or return pointers to structs. An API can make some changes to the layout of structs passed by reference without breaking the API (some changes will still be breaking).
+Removing functions and adding/removing arguments should be self-explanatory, but what it means to change the datatype of an argument or return value can be a bit tricky. The main reason is that many C apis accept or return pointers to structs. An API can make some changes to the layout of structs passed by reference without breaking the API (some changes will still be breaking).
 
 ### Struct Layout changes and compatibility
 
@@ -536,7 +536,7 @@ In general, there aren't convenient mechanisms for calling functions from other 
 
 ## C++
 
-If you are interested in accessing C++ from clojure, you may be interested in [jank](https://jank-lang.org/).
+If you are interested in accessing C++ from Clojure, you may be interested in [jank](https://jank-lang.org/).
 
 Accessing C++ from the JVM isn't free. If a C ABI interface doesn't exist, then one must be created to use C++ functions from the JVM. One tool that may help is [javacpp](https://github.com/bytedeco/javacpp). If you're lucky, then there may already be a wrapper available in [javacpp-presets](https://github.com/bytedeco/javacpp-presets/).
 
@@ -546,7 +546,7 @@ Accessing C++ from the JVM isn't free. If a C ABI interface doesn't exist, then 
 Similar to C++, Rust code cannot be directly called from the JVM without a C ABI compatible wrapper. If a C ABI compatible wrapper does not already exist, then [cbindgen](https://github.com/mozilla/cbindgen) may help.
 
 <!-- 
-# Working with Offheap Memory
+# Working with Off-Heap Memory
 
 ## Dtype next
 ### basic usage
@@ -573,7 +573,7 @@ numbers every programmer should know
 
 Despite the amount of software running on GPUs these days, GPU programming is still a bit of a mess. There are several APIs that target GPUs: OpenGL, Vulkan, CUDA, Metal, and DirectX. Each API has its strengths, weaknesses, availability, and shader language. Most options are limited to specific platforms. Cross platform options like Vulkan have a steep learning curve (see this +1,000 line example for drawing a [triangle](https://github.com/KhronosGroup/Vulkan-Samples/blob/177edebf0cd7d4f669667e49f052cfb56b17e004/samples/api/hello_triangle/hello_triangle.cpp)).
 
-Each API has its own shader language, which can make reusing code difficulty. Further, most shader languages have poor support for code reuse so many libraries that include shaders use a custom dialect that is non portable.
+Each API has its own shader language, which can make reusing code difficult. Further, most shader languages have poor support for code reuse so many libraries that include shaders use a custom dialect that is non-portable.
 
 There are higher level libraries that expose a higher level interface so that users don't have to write shaders. Due to the complexity of the underlying system, these higher level libraries often have to make tough choices about which languages, runtimes, and hardware they support. Especially for graphics, many higher level libraries still require writing shaders regardless.
 
@@ -593,7 +593,7 @@ ffi - Foreign Function Interface
 ## Resources
 
 
-#graalvm on clojurians slack
+#GraalVM on clojurians slack
 https://github.com/clj-easy/graal-docs
 https://github.com/clj-easy/graalvm-clojure
 

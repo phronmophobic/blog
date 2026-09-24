@@ -1009,7 +1009,10 @@
   (run! render-post! (vals @POSTS)))
 
 (defn -main [ & args]
-  (watch-blog (keyword (first args))))
+  (if (not (seq args))
+    (println "Error: you should pass a post id\nUsage clojure -M -m blog.mdown <post-id>")
+    (watch-blog (keyword (first args))))
+  )
 
 ;; for fenced code blog
 ;; (.getinfo adsf) to find lang

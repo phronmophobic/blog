@@ -581,7 +581,8 @@
                          src
                          body
                          asset-prefix
-                         vega?]
+                         vega?
+                         sticky-toc?]
                   :as post}]
   (let [body (if body
                body
@@ -608,6 +609,13 @@
 
       [:link {:href (str asset-prefix "bootstrap.min.css")
               :rel "stylesheet"}]
+      (when sticky-toc?
+        (list
+         [:link {:href 
+                 ;; "https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.css"
+                 (str asset-prefix "bootstrap-toc.min.css")
+                 
+                 :rel "stylesheet"}]))
       [:link {:href (str asset-prefix "blog.css")
               :rel "stylesheet"}]
       [:style {:type "text/css"}
@@ -633,9 +641,16 @@
         )
        " div.syntax { padding: 4px ; background-color: #f8f8f8; margin-bottom: 18px }"
        " div.syntax pre { margin-bottom: 0 }"]
+      
+      
 ]
 
-     [:body
+     [:body (merge
+             {}
+             (when sticky-toc?
+               {:data-spy "scroll"
+                :style "position:relative"
+                :data-target "#toc"}))
 
       (when nav
         [:div {:class "blog-masthead"}
@@ -650,10 +665,27 @@
        [:div.row
         [:div.col-sm-8.blog-main
          [:div.blog-post
-          body]]]]
-
-
-      ]])
+          body]]
+        (when sticky-toc?
+          [:div.col-sm-3.d-none.d-md-block
+           [:nav {:id "toc"
+                  :style {:position "sticky"
+                          :top "42px"}
+                  :data-toggle "toc"}]])]]
+      
+      (when sticky-toc?
+        (list [:script {:src ;;"https://code.jquery.com/jquery-3.2.1.slim.min.js" 
+                        (str asset-prefix "jquery-3.2.1.slim.min.js")}]
+              [:script {:src ;; "https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" 
+                        (str asset-prefix "popper.min.js")}]
+              [:script {:src ;; "https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+                        (str asset-prefix "bootstrap.min.js")}]
+              [:script {:src ;; "https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"
+                        (str asset-prefix "bootstrap-toc.min.js")}]
+              [:script {:src 
+                        (str asset-prefix "inittoc.js")}
+               
+               ]))]])
   )
 
 
@@ -673,6 +705,24 @@
                  "Code on Github"]]]
    :src "markdown/functional-ui.md"
    :out "functional-ui.html"})
+
+(defpost fastleannative
+  {:id :fastleannative
+   :title "Fast Lean Native Clojure Reference"
+   ;; :subheading ""
+   :pubDate (date-to-instant 2026 9 22)
+   :vega? false
+   :sticky-toc? true
+   :nav [:div {:class "container"}
+         [:nav.nav.blog-nav
+          [:a.nav-link
+           {:href "/"}
+           "Home"]]]
+   :asset-prefix "fastleannative/"
+   :src "markdown/fastleannative.md"
+   :out "fastleannative.html"})
+
+
 
 (defpost reevaluatingtheide
   {:id :reevaluatingtheide

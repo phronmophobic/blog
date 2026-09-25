@@ -708,8 +708,8 @@
 
 (defpost fastleannative
   {:id :fastleannative
-   :title "Fast Lean Native Clojure Reference"
-   ;; :subheading ""
+   :title "Fast, Lean, Native Clojure"
+   :subheading "Supplemental Material"
    :pubDate (date-to-instant 2026 9 22)
    :vega? false
    :sticky-toc? true

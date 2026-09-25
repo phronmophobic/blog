@@ -171,6 +171,14 @@ As you can see, it has a pointer to the contents of the string and a field that 
 
 Some native functions accept callbacks, aka function pointers, or upcalls. This allows native functions to invoke functions in the higher level language. Just to give a flavor why this is useful, let's take a look at a few examples.
 
+<!-- 
+should discuss 
+
+(def ^:private main-class-loader @clojure.lang.Compiler/LOADER)
+(.setContextClassLoader (Thread/currentThread) main-class-loader)
+
+-->
+
 ### glfw example
 
 Here is an example of a callback that can be passed to glfw to receive [key events](https://www.glfw.org/docs/latest/input_guide.html#input_key).
@@ -477,6 +485,12 @@ Even though you may be calling native code that expects manual memory management
 
 On the JVM, you can use the [java.lang.foreign.Arena/ofAuto](https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/foreign/Arena.html#ofAuto()) to keep track of MemorySegments for you. However, the auto arena (or the other arenas) can only help with memory that you allocate.
 
+<!-- 
+You can also use arenas
+
+https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/foreign/MemorySegment.html#reinterpret(long,java.lang.foreign.Arena,java.util.function.Consumer)
+-->
+
 Another technique is to use [java.lang.ref.Cleaner](https://docs.oracle.com/en/java/javase/22/docs/api/java.base/java/lang/ref/Cleaner.html). Cleaners allow you to register a function to be called when an object becomes phantom reachable (ie. ready to be collected). This allows you to either free associated resources or decrement a reference count in a managed way. Just be sure that your cleaning function doesn't reference your object! Even if your context doesn't have access to Java's Cleaner (eg. the context isn't JVM based), there may be a similar alternative.
 
 Warning! The garbage collector will probably not release resources promptly. In many cases, that is a good thing because it increases efficiency. Waiting for a handle to be collected to free resources may take a while. Further, the garbage collector does not necessarily know the size of the resource referenced by a handle. The handle itself may only be a few bytes, but may point to a very large object in memory.
@@ -560,6 +574,8 @@ more ergomic wrappers with coercion
 
 # Error handling
 
+https://docs.oracle.com/en/java/javase/17/troubleshoot/location-fatal-error-log.html#GUID-DB124974-7621-456A-8CF8-ACB725D930DB
+
 # Mobile
 
 # Benchmarks
@@ -567,6 +583,11 @@ more ergomic wrappers with coercion
 numbers every programmer should know
 
 # Web Assembly
+
+# JVM Flags
+-XX:+UnlockDiagnosticVMOptions
+-XX:-OmitStackTraceInFastThrow
+-XX:+DebugNonSafepoints
 
 --->
 # GPUs
